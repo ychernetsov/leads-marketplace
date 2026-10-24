@@ -23,7 +23,12 @@ export function useAuth() {
         throw err;
       }
     },
-    retry: false,
+    retry: (failureCount, err) => {
+      if (failureCount >= 10) return false;
+      if (err instanceof ApiError) return false;
+      return true;
+    },
+    retryDelay: (attempt) => Math.min(1500, 200 * (attempt + 1)),
     refetchOnWindowFocus: false,
     staleTime: 60_000,
   });

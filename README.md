@@ -10,7 +10,7 @@ CSV dataset marketplace — React client + Express API + PostgreSQL (Prisma) + C
 
 ## Quick start — mocks (fresh machine)
 
-One terminal starts **API + client**. Wait until you see both `Local: http://localhost:4200/` and `[ ready ] http://localhost:3000`.
+One terminal starts **API + client**. The client waits until the API responds on port 3000, then Vite starts (you should see `[ ready ] http://localhost:3000` before `Local: http://localhost:4200/`).
 
 ```sh
 npm install
