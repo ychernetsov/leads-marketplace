@@ -1,4 +1,4 @@
-import '../load-env.js';
+import '../src/load-env.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';

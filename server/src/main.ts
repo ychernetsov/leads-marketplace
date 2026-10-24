@@ -1,3 +1,4 @@
+import './load-env.js';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import { authRouter } from './routes/auth.routes.js';
@@ -8,7 +9,8 @@ import { isMocksMode } from './lib/mocks.js';
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';
+const frontendUrl =
+  process.env.FRONTEND_URL?.trim() || 'http://localhost:4200';
 
 const app = express();
 
@@ -45,5 +47,6 @@ app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);
   if (isMocksMode()) {
     console.log('[ mocks ] R2 + Stripe use local happy-path stubs');
+    console.log(`[ mocks ] SQLite: ${process.env.DATABASE_URL}`);
   }
 });

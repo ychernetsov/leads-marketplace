@@ -24,6 +24,7 @@ export function useAuth() {
       }
     },
     retry: false,
+    refetchOnWindowFocus: false,
     staleTime: 60_000,
   });
 

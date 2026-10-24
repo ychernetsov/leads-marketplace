@@ -1,4 +1,4 @@
-import '../load-env.js';
+import '../src/load-env.js';
 import { getPublicSampleUrl } from '../src/lib/r2.js';
 import { prisma } from '../src/lib/prisma.js';
 
