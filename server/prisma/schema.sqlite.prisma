@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  regular
+  admin
+}
+
+enum FileStatus {
+  uploading
+  processing
+  ready
+  failed
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(regular)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  orders        Order[]
+  uploadedFiles File[]  @relation("UploadedBy")
+
+  @@map("users")
+}
+
+model File {
+  id               String     @id @default(uuid())
+  title            String
+  description      String
+  priceCents       Int        @map("price_cents")
+  currency         String     @default("usd")
+  numRows          Int?       @map("num_rows")
+  sizeBytes        BigInt?    @map("size_bytes")
+  originalFilename String?    @map("original_filename")
+  r2KeyFull        String     @map("r2_key_full")
+  r2KeySample      String?    @map("r2_key_sample")
+  sampleUrl        String?    @map("sample_url")
+  status           FileStatus @default(uploading)
+  uploadedBy       String?    @map("uploaded_by")
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  uploader User?   @relation("UploadedBy", fields: [uploadedBy], references: [id])
+  orders   Order[]
+
+  @@map("files")
+}
+
+model Order {
+  id                       String      @id @default(uuid())
+  userId                   String      @map("user_id")
+  fileId                   String      @map("file_id")
+  amountCents              Int         @map("amount_cents")
+  currency                 String      @default("usd")
+  stripeCheckoutSessionId  String?     @unique @map("stripe_checkout_session_id")
+  stripePaymentIntentId    String?     @unique @map("stripe_payment_intent_id")
+  status                   OrderStatus @default(pending)
+  createdAt                DateTime    @default(now()) @map("created_at")
+  paidAt                   DateTime?   @map("paid_at")
+
+  user User @relation(fields: [userId], references: [id])
+  file File @relation(fields: [fileId], references: [id])
+
+  @@map("orders")
+}

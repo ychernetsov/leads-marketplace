@@ -1,7 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { isMocksMode } from './mocks.js';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (isMocksMode() ? 'mocks-dev-jwt-not-for-production' : undefined);
 if (!JWT_SECRET) throw new Error('JWT_SECRET is not set');
 
 export function hashPassword(password: string) {

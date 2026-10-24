@@ -45,7 +45,8 @@ If a dev terminal looks frozen (no URLs, Ctrl+C does nothing), you may be in **N
 | `npm run db:migrate` | Run Prisma migrations |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:seed` | Seed database |
-| `npm run db:seed:mocks` | Seed dev users + catalog into local mock storage |
+| `npm run db:setup:mocks` | SQLite DB push + generate + seed (one-shot mocks prep) |
+| `npm run db:seed:mocks` | Re-seed dev users + catalog (after setup) |
 | `npm run db:studio` | Open Prisma Studio |
 
 ## Database
@@ -64,20 +65,18 @@ Connection string (local):
 postgresql://postgres:postgres@localhost:5432/leads_marketplace
 ```
 
-## Local dev with mocks (no R2 / Stripe)
+## Local dev with mocks (no cloud DB / R2 / Stripe)
 
-Uses **real** local Postgres and auth (signup/login/logout). **R2** and **Stripe** are stubbed with a happy path (uploads go to `server/.mock-storage`, checkout skips payment and marks orders paid).
+**No Docker Postgres, no `DATABASE_URL`, no `JWT_SECRET`, no R2/Stripe keys.** Mocks mode uses a SQLite file at `server/.mock-storage/dev.db`, a fixed dev JWT, and stubbed object storage + checkout.
 
 ```sh
-npm run db:up
-npm run db:migrate
-npm run db:generate
-npm run db:seed:mocks
-
+npm run db:setup:mocks
 npm run dev:mocks
 ```
 
-Nx loads `.env.serve.mocks` (`MOCKS=true`, `FRONTEND_URL=http://localhost:4200`). You still need `DATABASE_URL` and `JWT_SECRET` in root `.env`.
+Nx loads `.env.serve.mocks` (`MOCKS=true`, `FRONTEND_URL=http://localhost:4200`). Auth (signup/login/logout) is real application logic against that local DB.
+
+When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so the Prisma client matches the Postgres schema again.
 
 **Seeded accounts** (password `devpassword1` for all):
 

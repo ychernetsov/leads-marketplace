@@ -596,7 +596,6 @@ export type OrderCreateOrConnectWithoutUserInput = {
 
 export type OrderCreateManyUserInputEnvelope = {
   data: Prisma.OrderCreateManyUserInput | Prisma.OrderCreateManyUserInput[]
-  skipDuplicates?: boolean
 }
 
 export type OrderUpsertWithWhereUniqueWithoutUserInput = {
@@ -662,7 +661,6 @@ export type OrderCreateOrConnectWithoutFileInput = {
 
 export type OrderCreateManyFileInputEnvelope = {
   data: Prisma.OrderCreateManyFileInput | Prisma.OrderCreateManyFileInput[]
-  skipDuplicates?: boolean
 }
 
 export type OrderUpsertWithWhereUniqueWithoutFileInput = {
@@ -1537,7 +1535,6 @@ export type OrderCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * The data used to create many Orders.
    */
   data: Prisma.OrderCreateManyInput | Prisma.OrderCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**
@@ -1556,7 +1553,6 @@ export type OrderCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many Orders.
    */
   data: Prisma.OrderCreateManyInput | Prisma.OrderCreateManyInput[]
-  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

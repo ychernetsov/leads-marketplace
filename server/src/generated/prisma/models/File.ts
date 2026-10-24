@@ -712,7 +712,6 @@ export type FileCreateOrConnectWithoutUploaderInput = {
 
 export type FileCreateManyUploaderInputEnvelope = {
   data: Prisma.FileCreateManyUploaderInput | Prisma.FileCreateManyUploaderInput[]
-  skipDuplicates?: boolean
 }
 
 export type FileUpsertWithWhereUniqueWithoutUploaderInput = {
@@ -1712,7 +1711,6 @@ export type FileCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * The data used to create many Files.
    */
   data: Prisma.FileCreateManyInput | Prisma.FileCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**
@@ -1731,7 +1729,6 @@ export type FileCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions
    * The data used to create many Files.
    */
   data: Prisma.FileCreateManyInput | Prisma.FileCreateManyInput[]
-  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

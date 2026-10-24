@@ -1,10 +1,9 @@
-import 'dotenv/config';
+import '../load-env.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/prisma/client.js';
 import { hashPassword } from '../src/lib/auth.js';
+import { prisma } from '../src/lib/prisma.js';
 import { getPublicSampleUrl } from '../src/lib/r2.js';
 import {
   uploadPublicSample,
@@ -37,11 +36,6 @@ const placeholdersDir = path.join(
   prismaRoot,
   '../scripts/placeholder-files',
 );
-
-const adapter = new PrismaPg({
-  connectionString: process.env['DATABASE_URL'],
-});
-const prisma = new PrismaClient({ adapter });
 
 function titleCase(name: string) {
   return name
