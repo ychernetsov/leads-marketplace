@@ -4,9 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nx run-many -t serve -p server client --output-style=stream",
-    "prepare:mocks": "npm run db:push:mocks && npm run db:generate:mocks",
-    "dev:mocks": "npm run prepare:mocks && MOCKS=true concurrently -k -n server,client -c blue,magenta \"nx serve server -c mocks --output-style=stream\" \"wait-on -d 500 -t 180000 http-get://127.0.0.1:3000/ && nx serve client -c mocks --output-style=stream\"",
-    "start:mocks": "npm run db:setup:mocks && npm run dev:mocks",
+    "dev:mocks": "npm run db:push:mocks && npm run db:generate:mocks && node scripts/ensure-mocks-seed.mjs && MOCKS=true concurrently -k -n server,client -c blue,magenta \"nx serve server -c mocks --output-style=stream\" \"wait-on -d 500 -t 180000 http-get://localhost:3000/ && nx serve client -c mocks --output-style=stream\"",
     "dev:server": "nx serve server --output-style=stream",
     "dev:client": "nx serve client --output-style=stream",
     "db:up": "docker start leads-pg || docker run -d --name leads-pg -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=leads_marketplace -p 5432:5432 postgres:16-alpine",

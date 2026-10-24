@@ -10,22 +10,16 @@ CSV dataset marketplace — React client + Express API + PostgreSQL (Prisma) + C
 
 ## Quick start — mocks (fresh machine)
 
-One terminal starts **API + client**. The client waits until the API responds on port 3000, then Vite starts (you should see `[ ready ] http://localhost:3000` before `Local: http://localhost:4200/`).
-
 ```sh
 npm install
-npm run start:mocks
-```
-
-Open **http://localhost:4200**. The client talks to the API through Vite (`/api` → port 3000), so you do not need `client/.env` for local mocks.
-
-Daily work after the first setup:
-
-```sh
 npm run dev:mocks
 ```
 
-(`dev:mocks` refreshes the SQLite schema/client; run `npm run db:seed:mocks` if you need the demo catalog again.)
+Wait until you see **`[ ready ] http://localhost:3000`** and **`Local: http://localhost:4200/`**, then open **http://localhost:4200**.
+
+No `.env` required. The client uses Vite’s `/api` proxy to the API. Demo users and catalog are created automatically on first run (SQLite under `server/.mock-storage/`).
+
+If the client never appears on :4200, the API did not become ready — check the `[server]` logs. To reset demo data: `npm run db:seed:mocks`.
 
 ## Quick start — PostgreSQL + cloud keys
 
@@ -42,15 +36,14 @@ npm run dev
 If a dev terminal looks frozen (no URLs, Ctrl+C does nothing), you may be in **Nx TUI** mode from an older run. Press **`q`** to quit, or run `npx nx reset` and kill stray `nx run-many` processes. `npm run dev` uses streaming logs so **Ctrl+C** stops server and client normally.
 
 - **API:** http://localhost:3000  
-- **Client:** Vite default (usually http://localhost:4200)
+- **Client:** http://localhost:4200
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Serve server + client together |
-| `npm run start:mocks` | First-time mocks: SQLite setup + seed + dev servers |
-| `npm run dev:mocks` | Mocks dev (SQLite + stub R2/Stripe); runs schema sync first |
+| `npm run dev` | Serve server + client (Postgres / real R2+Stripe) |
+| `npm run dev:mocks` | SQLite + mocked R2/Stripe — setup + API + client |
 | `npm run dev:server` | Serve Express API only |
 | `npm run dev:client` | Serve React client only |
 | `npm run db:up` | Start PostgreSQL Docker container |
@@ -58,8 +51,8 @@ If a dev terminal looks frozen (no URLs, Ctrl+C does nothing), you may be in **N
 | `npm run db:migrate` | Run Prisma migrations |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:seed` | Seed database |
-| `npm run db:setup:mocks` | SQLite DB push + generate + seed (one-shot mocks prep) |
-| `npm run db:seed:mocks` | Re-seed dev users + catalog (after setup) |
+| `npm run db:setup:mocks` | SQLite push + generate + seed (manual full reset) |
+| `npm run db:seed:mocks` | Re-seed dev users + catalog |
 | `npm run db:studio` | Open Prisma Studio |
 
 ## Database
@@ -82,9 +75,7 @@ postgresql://postgres:postgres@localhost:5432/leads_marketplace
 
 **No Docker Postgres, no `DATABASE_URL`, no `JWT_SECRET`, no R2/Stripe keys.** Mocks mode uses a SQLite file at `server/.mock-storage/dev.db`, a fixed dev JWT, and stubbed object storage + checkout.
 
-See **Quick start — mocks** above. `MOCKS=true` is set by npm and Nx (see `.env.serve.mocks`). Auth is real app logic against local SQLite.
-
-If the browser shows `ERR_CONNECTION_REFUSED` on `/files`, the API is not up yet — wait for `[ ready ] http://localhost:3000` or run `npm run dev:server` with `MOCKS=true` in a second terminal to see startup errors.
+`npm run dev:mocks` sets `MOCKS=true`. Auth is real app logic against local SQLite.
 
 When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so the Prisma client matches the Postgres schema again.
 
@@ -95,8 +86,6 @@ When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so t
 | `admin@dev.local` | admin — use **UPLOAD** in the header or go to `/admin/upload` |
 | `buyer1@dev.local` | regular |
 | `buyer2@dev.local` | regular |
-
-Equivalent: `nx run-many -t serve -p server client -c mocks`.
 
 ## Stripe webhooks (optional)
 
