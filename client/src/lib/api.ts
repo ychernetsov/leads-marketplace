@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { getApiBaseUrl } from './apiBase';
+
+const API_URL = getApiBaseUrl();
 
 class ApiError extends Error {
   status: number;

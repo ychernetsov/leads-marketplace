@@ -5,7 +5,9 @@ import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { getApiBaseUrl } from '../lib/apiBase';
+
+const API_URL = getApiBaseUrl();
 
 type UploadStatus = 'idle' | 'uploading' | 'processing' | 'ready' | 'failed';
 

@@ -5,25 +5,37 @@ CSV dataset marketplace — React client + Express API + PostgreSQL (Prisma) + C
 ## Prerequisites
 
 - Node.js 22+
-- Docker (for PostgreSQL)
-- Env files configured (`server/.env`, `client/.env`, root `.env` as needed)
+- **Mocks dev (recommended for a fresh clone):** Node only — no Docker, no `.env`
+- **Full stack dev:** Docker for PostgreSQL and env files from `.env.example` / `client/.env.example`
 
-## Quick start
+## Quick start — mocks (fresh machine)
+
+One terminal starts **API + client**. Wait until you see both `Local: http://localhost:4200/` and `[ ready ] http://localhost:3000`.
 
 ```sh
 npm install
+npm run start:mocks
+```
 
-# Start PostgreSQL
+Open **http://localhost:4200**. The client talks to the API through Vite (`/api` → port 3000), so you do not need `client/.env` for local mocks.
+
+Daily work after the first setup:
+
+```sh
+npm run dev:mocks
+```
+
+(`dev:mocks` refreshes the SQLite schema/client; run `npm run db:seed:mocks` if you need the demo catalog again.)
+
+## Quick start — PostgreSQL + cloud keys
+
+```sh
+npm install
+cp .env.example .env   # fill in secrets
 npm run db:up
-
-# Apply migrations & generate Prisma client
 npm run db:migrate
 npm run db:generate
-
-# Optional: seed sample files
-npm run db:seed
-
-# Run API + client (separate terminals also fine)
+npm run db:seed        # optional
 npm run dev
 ```
 
@@ -37,7 +49,8 @@ If a dev terminal looks frozen (no URLs, Ctrl+C does nothing), you may be in **N
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Serve server + client together |
-| `npm run dev:mocks` | Dev with local DB + mocked R2/Stripe (see below) |
+| `npm run start:mocks` | First-time mocks: SQLite setup + seed + dev servers |
+| `npm run dev:mocks` | Mocks dev (SQLite + stub R2/Stripe); runs schema sync first |
 | `npm run dev:server` | Serve Express API only |
 | `npm run dev:client` | Serve React client only |
 | `npm run db:up` | Start PostgreSQL Docker container |
@@ -69,12 +82,9 @@ postgresql://postgres:postgres@localhost:5432/leads_marketplace
 
 **No Docker Postgres, no `DATABASE_URL`, no `JWT_SECRET`, no R2/Stripe keys.** Mocks mode uses a SQLite file at `server/.mock-storage/dev.db`, a fixed dev JWT, and stubbed object storage + checkout.
 
-```sh
-npm run db:setup:mocks
-npm run dev:mocks
-```
+See **Quick start — mocks** above. `MOCKS=true` is set by npm and Nx (see `.env.serve.mocks`). Auth is real app logic against local SQLite.
 
-`npm run dev:mocks` sets `MOCKS=true` (see `.env.serve.mocks` for reference). Auth (signup/login/logout) is real application logic against that local DB. Open the app at **http://localhost:4200** (not `127.0.0.1`) unless your server `FRONTEND_URL` matches.
+If the browser shows `ERR_CONNECTION_REFUSED` on `/files`, the API is not up yet — wait for `[ ready ] http://localhost:3000` or run `npm run dev:server` with `MOCKS=true` in a second terminal to see startup errors.
 
 When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so the Prisma client matches the Postgres schema again.
 

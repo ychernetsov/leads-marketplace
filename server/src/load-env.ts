@@ -32,6 +32,9 @@ export function applyMocksDefaults(): void {
 
   process.env.JWT_SECRET = 'mocks-dev-jwt-not-for-production';
   process.env.FRONTEND_URL = 'http://localhost:4200';
+  if (!process.env.API_URL?.trim()) {
+    process.env.API_URL = 'http://localhost:4200/api';
+  }
 
   const storageDir = getMocksStorageDir();
   fs.mkdirSync(storageDir, { recursive: true });
