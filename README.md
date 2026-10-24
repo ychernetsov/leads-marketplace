@@ -17,9 +17,11 @@ npm run dev:mocks
 
 Wait until you see **`[ ready ] http://localhost:3000`** and **`Local: http://localhost:4200/`**, then open **http://localhost:4200**.
 
-No `.env` required. The client uses Vite’s `/api` proxy to the API. Demo users and catalog are created automatically on first run (SQLite under `server/.mock-storage/`).
+No `.env` required. The client uses Vite’s `/api` proxy to the API. Demo users and catalog are seeded automatically when the SQLite DB is empty (under `server/.mock-storage/`).
 
-If the client never appears on :4200, the API did not become ready — check the `[server]` logs. To reset demo data: `npm run db:seed:mocks`.
+If `/files` is empty or dev login fails, run **`npm run db:seed:mocks`** once (or delete `server/.mock-storage/dev.db` and run `npm run dev:mocks` again).
+
+If the client never appears on :4200, the API did not become ready — check the `[server]` logs.
 
 ## Quick start — PostgreSQL + cloud keys
 
