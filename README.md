@@ -74,7 +74,7 @@ npm run db:setup:mocks
 npm run dev:mocks
 ```
 
-Nx loads `.env.serve.mocks` (`MOCKS=true`, `FRONTEND_URL=http://localhost:4200`). Auth (signup/login/logout) is real application logic against that local DB.
+`npm run dev:mocks` sets `MOCKS=true` (see `.env.serve.mocks` for reference). Auth (signup/login/logout) is real application logic against that local DB. Open the app at **http://localhost:4200** (not `127.0.0.1`) unless your server `FRONTEND_URL` matches.
 
 When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so the Prisma client matches the Postgres schema again.
 

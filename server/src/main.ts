@@ -11,11 +11,28 @@ const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 const frontendUrl =
   process.env.FRONTEND_URL?.trim() || 'http://localhost:4200';
+const isDev = process.env.NODE_ENV !== 'production';
+
+/** Local Vite may use localhost vs 127.0.0.1 or another port if 4200 is taken. */
+function corsAllowOrigin(requestOrigin: string | undefined): string {
+  if (!requestOrigin) return frontendUrl;
+  if (requestOrigin === frontendUrl) return requestOrigin;
+  if (
+    isDev &&
+    /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(requestOrigin)
+  ) {
+    return requestOrigin;
+  }
+  return frontendUrl;
+}
 
 const app = express();
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', frontendUrl);
+  res.header(
+    'Access-Control-Allow-Origin',
+    corsAllowOrigin(req.headers.origin),
+  );
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
