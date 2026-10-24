@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
+import { triggerFileDownload } from '../lib/download';
 import { useUiStore } from '../store/uiStore';
+import { useAuth } from '../hooks/useAuth';
 
 interface Order {
   id: string;
@@ -13,7 +15,16 @@ interface Order {
 
 export function OrdersPage() {
   const navigate = useNavigate();
+  const { isAdmin, isLoading: authLoading } = useAuth();
   const addToast = useUiStore((s) => s.addToast);
+
+  useEffect(() => {
+    if (!authLoading && isAdmin) {
+      navigate('/admin/upload', { replace: true });
+    }
+  }, [authLoading, isAdmin, navigate]);
+
+  if (!authLoading && isAdmin) return null;
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const {
@@ -32,7 +43,7 @@ export function OrdersPage() {
       const { url } = await api.get<{ url: string }>(
         `/files/${order.fileId}/download-url`,
       );
-      window.location.href = url;
+      await triggerFileDownload(url, `${order.fileTitle}.csv`);
       addToast('success', 'Download started');
     } catch (err: any) {
       if (err instanceof ApiError && err.status === 409) {
@@ -52,6 +63,21 @@ export function OrdersPage() {
       <div className="pc-header">
         <span className="pc-wordmark">CSV ARCHIVE</span>
         <div style={{ display: 'flex', gap: 18 }}>
+          <button
+            className="pc-nav-link"
+            onClick={() => navigate('/')}
+          >
+            CATALOG
+          </button>
+          {isAdmin && (
+            <button
+              className="pc-nav-link"
+              onClick={() => navigate('/admin/upload')}
+              style={{ color: 'var(--pc-accent)' }}
+            >
+              UPLOAD
+            </button>
+          )}
           <button className="pc-nav-link active">MY PURCHASES</button>
           <button
             className="pc-nav-link"

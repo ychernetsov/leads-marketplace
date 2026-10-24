@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../lib/api';
+import { triggerFileDownload } from '../lib/download';
 import { useUiStore } from '../store/uiStore';
 
 type State = 'checking' | 'processing' | 'done' | 'error';
@@ -28,10 +29,10 @@ export function CheckoutSuccessPage() {
       const { url } = await api.get<{ url: string }>(
         `/files/${fileId}/download-url`,
       );
+      await triggerFileDownload(url);
       setState('done');
       addToast('success', 'File unlocked — download started');
       queryClient.invalidateQueries({ queryKey: ['orders', 'mine'] });
-      window.location.href = url;
     } catch (err: any) {
       if (err instanceof ApiError && err.status === 409) {
         setState('processing');

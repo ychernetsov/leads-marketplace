@@ -216,6 +216,12 @@ filesRouter.post('/:id/checkout', requireAuth, async (req, res) => {
   const userId = (req as AuthedRequest).userId;
   if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return res.status(401).json({ error: 'Not authenticated' });
+  if (user.role === 'admin') {
+    return res.status(403).json({ error: 'Admin accounts cannot purchase datasets' });
+  }
+
   const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';
   const successUrl = `${frontendUrl}/checkout/success?fileId=${file.id}`;
   const cancelUrl = `${frontendUrl}/checkout/cancel`;

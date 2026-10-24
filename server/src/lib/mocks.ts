@@ -1,5 +1,4 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { getMocksStorageDir } from '../load-env.js';
 
 export function isMocksMode(): boolean {
   return process.env.MOCKS === 'true' || process.env.MOCKS === '1';
@@ -12,16 +11,13 @@ export function getApiBaseUrl(): string {
   return `http://${host}:${port}`;
 }
 
-const serverRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../..',
-);
-
-export const MOCK_STORAGE_ROOT = path.join(serverRoot, '.mock-storage');
+export function getMockStorageRoot(): string {
+  return getMocksStorageDir();
+}
 
 export function sanitizeStorageKey(key: string): string {
-  const normalized = path.normalize(key).replace(/^(\.\.(\/|\\|$))+/, '');
-  if (normalized.includes('..') || path.isAbsolute(normalized)) {
+  const normalized = key.replace(/\\/g, '/').replace(/^(\.\.(\/|$))+/, '');
+  if (normalized.includes('..') || normalized.startsWith('/')) {
     throw new Error('Invalid storage key');
   }
   return normalized;

@@ -4,10 +4,9 @@ import {
   readPublicObject,
   writePrivateObject,
 } from '../lib/r2.mock.js';
-import { sanitizeStorageKey } from '../lib/mocks.js';
+import { getMockStorageRoot, sanitizeStorageKey } from '../lib/mocks.js';
 import fs from 'fs/promises';
 import path from 'path';
-import { MOCK_STORAGE_ROOT } from '../lib/mocks.js';
 
 export const mocksRouter = Router();
 
@@ -43,7 +42,7 @@ mocksRouter.get('/r2/download', async (req, res) => {
       return res.status(403).json({ error: 'Invalid token' });
     }
     const filePath = path.join(
-      MOCK_STORAGE_ROOT,
+      getMockStorageRoot(),
       'private',
       sanitizeStorageKey(payload.key),
     );

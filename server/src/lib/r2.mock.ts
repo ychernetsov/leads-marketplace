@@ -2,17 +2,17 @@ import fs from 'fs/promises';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import {
-  MOCK_STORAGE_ROOT,
   getApiBaseUrl,
+  getMockStorageRoot,
   sanitizeStorageKey,
 } from './mocks.js';
 
 function privatePath(key: string) {
-  return path.join(MOCK_STORAGE_ROOT, 'private', sanitizeStorageKey(key));
+  return path.join(getMockStorageRoot(), 'private', sanitizeStorageKey(key));
 }
 
 function publicPath(key: string) {
-  return path.join(MOCK_STORAGE_ROOT, 'public', sanitizeStorageKey(key));
+  return path.join(getMockStorageRoot(), 'public', sanitizeStorageKey(key));
 }
 
 async function ensureDir(filePath: string) {

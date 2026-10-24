@@ -1,4 +1,5 @@
 import { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
@@ -9,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 type UploadStatus = 'idle' | 'uploading' | 'processing' | 'ready' | 'failed';
 
 export function AdminUploadPage() {
+  const navigate = useNavigate();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
@@ -112,7 +114,16 @@ export function AdminUploadPage() {
     <div className="pc-page">
       <div className="pc-header">
         <span className="pc-wordmark">CSV ARCHIVE</span>
-        <span className="pc-nav-link active">ADMIN UPLOAD</span>
+        <div style={{ display: 'flex', gap: 18 }}>
+          <button
+            type="button"
+            className="pc-nav-link"
+            onClick={() => navigate('/')}
+          >
+            CATALOG
+          </button>
+          <span className="pc-nav-link active">UPLOAD</span>
+        </div>
       </div>
 
       <div style={{ padding: 32, maxWidth: 480, margin: '0 auto' }}>

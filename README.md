@@ -82,7 +82,7 @@ When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so t
 
 | Email | Role |
 |-------|------|
-| `admin@dev.local` | admin (`/admin/upload`) |
+| `admin@dev.local` | admin — use **UPLOAD** in the header or go to `/admin/upload` |
 | `buyer1@dev.local` | regular |
 | `buyer2@dev.local` | regular |
 

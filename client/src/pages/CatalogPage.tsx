@@ -15,7 +15,7 @@ interface CatalogFile {
 }
 
 const CatalogPage = () => {
-   const { isLoggedIn } = useAuth();
+   const { isLoggedIn, isAdmin } = useAuth();
    const navigate = useNavigate();
    const addToast = useUiStore((s) => s.addToast);
 
@@ -51,12 +51,24 @@ const CatalogPage = () => {
          <span className="pc-wordmark">CSV ARCHIVE</span>
          <div style={{ display: 'flex', gap: 18 }}>
            {isLoggedIn ? (
-             <button
-               className="pc-nav-link"
-               onClick={() => navigate('/orders')}
-             >
-               MY PURCHASES
-             </button>
+             <>
+               {isAdmin ? (
+                 <button
+                   className="pc-nav-link"
+                   onClick={() => navigate('/admin/upload')}
+                   style={{ color: 'var(--pc-accent)' }}
+                 >
+                   UPLOAD
+                 </button>
+               ) : (
+                 <button
+                   className="pc-nav-link"
+                   onClick={() => navigate('/orders')}
+                 >
+                   MY PURCHASES
+                 </button>
+               )}
+             </>
            ) : (
              <>
                <button
@@ -128,12 +140,14 @@ const CatalogPage = () => {
                    SAMPLE
                  </a>
                )}
-               <button
-                 className="pc-pill pc-pill-accent"
-                 onClick={() => handleBuy(file.id)}
-               >
-                 ${(file.priceCents / 100).toFixed(2)} BUY
-               </button>
+               {!isAdmin && (
+                 <button
+                   className="pc-pill pc-pill-accent"
+                   onClick={() => handleBuy(file.id)}
+                 >
+                   ${(file.priceCents / 100).toFixed(2)} BUY
+                 </button>
+               )}
              </div>
            </div>
          ))}
