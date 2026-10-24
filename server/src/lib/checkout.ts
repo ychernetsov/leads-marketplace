@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { isMocksMode } from './mocks.js';
-import { stripe } from './stripe.js';
+import { getStripe } from './stripe.js';
 
 export type CheckoutSessionParams = {
   fileId: string;
@@ -26,7 +26,7 @@ export async function createCheckoutSession(
     };
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
     line_items: [

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { stripe } from '../lib/stripe.js';
+import { getStripe } from '../lib/stripe.js';
 import { prisma } from '../lib/prisma.js';
 import { isMocksMode } from '../lib/mocks.js';
 
@@ -13,7 +13,7 @@ webhooksRouter.post('/stripe', async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       req.body, // must be the raw Buffer, not parsed JSON
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!,

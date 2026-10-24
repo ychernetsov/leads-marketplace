@@ -15,11 +15,14 @@ export function resolveServerRoot(): string {
 const serverRoot = resolveServerRoot();
 const workspaceRoot = path.join(serverRoot, '..');
 
-dotenv.config({ path: path.join(workspaceRoot, '.env') });
-dotenv.config({ path: path.join(serverRoot, '.env') });
-
 export function isMocksEnv(): boolean {
   return process.env.MOCKS === 'true' || process.env.MOCKS === '1';
+}
+
+/** Mocks dev must run with zero `.env`; real stack loads optional env files. */
+if (!isMocksEnv()) {
+  dotenv.config({ path: path.join(workspaceRoot, '.env') });
+  dotenv.config({ path: path.join(serverRoot, '.env') });
 }
 
 export function getMocksStorageDir(): string {

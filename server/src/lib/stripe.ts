@@ -1,5 +1,16 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-06-24.dahlia',
-});
+let stripeClient: Stripe | null = null;
+
+/** Lazy init so mocks mode never requires STRIPE_SECRET_KEY at import time. */
+export function getStripe(): Stripe {
+  if (stripeClient) return stripeClient;
+  const key = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!key) {
+    throw new Error('STRIPE_SECRET_KEY is not set');
+  }
+  stripeClient = new Stripe(key, {
+    apiVersion: '2026-06-24.dahlia',
+  });
+  return stripeClient;
+}
