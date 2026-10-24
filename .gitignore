@@ -47,7 +47,9 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+!.env.serve.mocks
 cookies.txt
 
 vite.config.*.timestamp*
 /generated/prisma
+server/.mock-storage

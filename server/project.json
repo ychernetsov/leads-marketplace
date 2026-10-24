@@ -92,6 +92,9 @@
         "development": {
           "buildTarget": "server:build:development"
         },
+        "mocks": {
+          "buildTarget": "server:build:development"
+        },
         "production": {
           "buildTarget": "server:build:production"
         }

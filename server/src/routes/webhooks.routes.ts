@@ -1,10 +1,14 @@
 import { Router } from 'express';
 import { stripe } from '../lib/stripe.js';
 import { prisma } from '../lib/prisma.js';
+import { isMocksMode } from '../lib/mocks.js';
 
 export const webhooksRouter = Router();
 
 webhooksRouter.post('/stripe', async (req, res) => {
+  if (isMocksMode()) {
+    return res.json({ received: true, mock: true });
+  }
   const signature = req.headers['stripe-signature'] as string;
   let event;
 

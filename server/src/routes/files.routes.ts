@@ -12,7 +12,8 @@ import { requireAuth, AuthedRequest } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { randomUUID } from 'crypto';
 import { parse } from 'csv-parse';
-import { stripe } from '../lib/stripe.js';
+import { createCheckoutSession } from '../lib/checkout.js';
+import { isMocksMode } from '../lib/mocks.js';
 
 const uploadMetaSchema = z.object({
   title: z.string().min(1),
@@ -215,22 +216,20 @@ filesRouter.post('/:id/checkout', requireAuth, async (req, res) => {
   const userId = (req as AuthedRequest).userId;
   if (!userId) return res.status(401).json({ error: 'Not authenticated' });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency: file.currency,
-          product_data: { name: file.title },
-          unit_amount: file.priceCents,
-        },
-        quantity: 1,
-      },
-    ],
-    success_url: `${process.env.FRONTEND_URL}/checkout/success?fileId=${file.id}`,
-    cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
+  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:4200';
+  const successUrl = `${frontendUrl}/checkout/success?fileId=${file.id}`;
+  const cancelUrl = `${frontendUrl}/checkout/cancel`;
+
+  const session = await createCheckoutSession({
+    fileId: file.id,
+    title: file.title,
+    priceCents: file.priceCents,
+    currency: file.currency,
+    successUrl,
+    cancelUrl,
   });
+
+  const mockPaid = isMocksMode();
 
   await prisma.order.create({
     data: {
@@ -239,7 +238,9 @@ filesRouter.post('/:id/checkout', requireAuth, async (req, res) => {
       amountCents: file.priceCents,
       currency: file.currency,
       stripeCheckoutSessionId: session.id,
-      status: 'pending',
+      status: mockPaid ? 'paid' : 'pending',
+      paidAt: mockPaid ? new Date() : undefined,
+      stripePaymentIntentId: mockPaid ? `mock_pi_${session.id}` : undefined,
     },
   });
 
