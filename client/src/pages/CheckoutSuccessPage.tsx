@@ -51,7 +51,18 @@ export function CheckoutSuccessPage() {
   return (
     <div className="pc-page">
       <div className="pc-header" style={{ justifyContent: 'center' }}>
-        <span className="pc-wordmark">CSV ARCHIVE</span>
+        <span
+          className="pc-wordmark"
+          role="link"
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') navigate('/');
+          }}
+        >
+          CSV ARCHIVE
+        </span>
       </div>
 
       <div

@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useUiStore } from "../store/uiStore";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { Header } from "../components/Header";
 
 interface CatalogFile {
   id: string;
@@ -47,47 +48,7 @@ const CatalogPage = () => {
 
    return (
      <div className="pc-page">
-       <div className="pc-header">
-         <span className="pc-wordmark">CSV ARCHIVE</span>
-         <div style={{ display: 'flex', gap: 18 }}>
-           {isLoggedIn ? (
-             <>
-               {isAdmin ? (
-                 <button
-                   className="pc-nav-link"
-                   onClick={() => navigate('/admin/upload')}
-                   style={{ color: 'var(--pc-accent)' }}
-                 >
-                   UPLOAD
-                 </button>
-               ) : (
-                 <button
-                   className="pc-nav-link"
-                   onClick={() => navigate('/orders')}
-                 >
-                   MY PURCHASES
-                 </button>
-               )}
-             </>
-           ) : (
-             <>
-               <button
-                 className="pc-nav-link"
-                 onClick={() => navigate('/login')}
-               >
-                 LOG IN
-               </button>
-               <button
-                 className="pc-nav-link"
-                 onClick={() => navigate('/signup')}
-                 style={{ color: 'var(--pc-accent)' }}
-               >
-                 SIGN UP
-               </button>
-             </>
-           )}
-         </div>
-       </div>
+       <Header active="catalog" />
 
        <div className="pc-subheader">
          {files ? `${files.length} DATASETS` : ''} · SAMPLE FREE · $4.00 TO

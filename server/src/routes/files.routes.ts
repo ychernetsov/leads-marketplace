@@ -40,6 +40,12 @@ export const filesRouter = Router();
 filesRouter.get('/', async (_req, res) => {
   try {
     const files = await prisma.file.findMany({
+      // Only expose files that finished processing successfully. Files
+      // that are still uploading/processing, or that failed processing,
+      // have no sample/price the buyer can act on and would otherwise show
+      // up as a dead end in the catalog (sample missing, "buy" failing
+      // with a 404 since checkout requires a 'ready' file).
+      where: { status: 'ready' },
       select: {
         id: true,
         title: true,

@@ -7,6 +7,7 @@ import { OrdersPage } from '../pages/OrdersPage';
 import { AdminUploadPage } from '../pages/AdminUploadPage';
 import { CheckoutSuccessPage } from '../pages/CheckoutSuccessPage';
 import { CheckoutCancelPage } from '../pages/CheckoutCancelPage';
+import { NotFoundPage } from '../pages/NotFoundPage';
 
 export function App() {
   const { isLoading } = useAuth();
@@ -23,6 +24,7 @@ export function App() {
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
         <Route path="/admin/upload" element={<AdminUploadPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <ToastContainer />
     </>

@@ -5,6 +5,7 @@ import { api, ApiError } from '../lib/api';
 import { triggerFileDownload } from '../lib/download';
 import { useUiStore } from '../store/uiStore';
 import { useAuth } from '../hooks/useAuth';
+import { Header } from '../components/Header';
 
 interface Order {
   id: string;
@@ -15,16 +16,14 @@ interface Order {
 
 export function OrdersPage() {
   const navigate = useNavigate();
-  const { isAdmin, isLoading: authLoading } = useAuth();
+  const { isLoggedIn, isAdmin, isLoading: authLoading } = useAuth();
   const addToast = useUiStore((s) => s.addToast);
 
-  useEffect(() => {
-    if (!authLoading && isAdmin) {
-      navigate('/admin/upload', { replace: true });
-    }
-  }, [authLoading, isAdmin, navigate]);
-
-  if (!authLoading && isAdmin) return null;
+  // NOTE: every hook below must run unconditionally on every render
+  // (admins and logged-out visitors included) — React requires the exact
+  // same hooks to be called in the exact same order every time. Redirects
+  // happen via the effect + the early `return null` further down, which
+  // only happens *after* all hooks have already been called.
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const {
@@ -35,7 +34,22 @@ export function OrdersPage() {
   } = useQuery({
     queryKey: ['orders', 'mine'],
     queryFn: () => api.get<Order[]>('/files/orders/mine'),
+    // Admins don't have purchases, and logged-out visitors can't have any
+    // either — both get redirected away immediately below, so there's no
+    // reason to hit the API (and fail with a 401/redirect loop) for them.
+    enabled: !authLoading && isLoggedIn && !isAdmin,
   });
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isLoggedIn) {
+      navigate('/login', { replace: true });
+    } else if (isAdmin) {
+      navigate('/admin/upload', { replace: true });
+    }
+  }, [authLoading, isLoggedIn, isAdmin, navigate]);
+
+  if (!authLoading && (!isLoggedIn || isAdmin)) return null;
 
   async function handleDownloadAgain(order: Order) {
     setDownloadingId(order.id);
@@ -60,36 +74,7 @@ export function OrdersPage() {
 
   return (
     <div className="pc-page">
-      <div className="pc-header">
-        <span className="pc-wordmark">CSV ARCHIVE</span>
-        <div style={{ display: 'flex', gap: 18 }}>
-          <button
-            className="pc-nav-link"
-            onClick={() => navigate('/')}
-          >
-            CATALOG
-          </button>
-          {isAdmin && (
-            <button
-              className="pc-nav-link"
-              onClick={() => navigate('/admin/upload')}
-              style={{ color: 'var(--pc-accent)' }}
-            >
-              UPLOAD
-            </button>
-          )}
-          <button className="pc-nav-link active">MY PURCHASES</button>
-          <button
-            className="pc-nav-link"
-            onClick={async () => {
-              await api.post('/auth/logout');
-              window.location.href = '/';
-            }}
-          >
-            LOG OUT
-          </button>
-        </div>
-      </div>
+      <Header active="orders" />
 
       <div className="pc-subheader">
         {orders ? `${orders.length} FILES PURCHASED` : ''}

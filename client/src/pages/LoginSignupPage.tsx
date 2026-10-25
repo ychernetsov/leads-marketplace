@@ -1,8 +1,9 @@
-import { ChangeEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
+import { useAuth } from '../hooks/useAuth';
 
 interface AuthResponse {
   id: string;
@@ -11,7 +12,10 @@ interface AuthResponse {
 }
 
 export function LoginSignupPage() {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const location = useLocation();
+  const [mode, setMode] = useState<'login' | 'signup'>(
+    location.pathname === '/signup' ? 'signup' : 'login',
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -20,6 +24,23 @@ export function LoginSignupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
+
+  // If you're already logged in, /login and /signup shouldn't show the
+  // login form again — send you straight back to the catalog instead.
+  useEffect(() => {
+    if (!authLoading && isLoggedIn) {
+      navigate('/', { replace: true });
+    }
+  }, [authLoading, isLoggedIn, navigate]);
+
+  // Keep the login/signup tab in sync with the URL (e.g. browser back/forward
+  // between /login and /signup).
+  useEffect(() => {
+    setMode(location.pathname === '/signup' ? 'signup' : 'login');
+  }, [location.pathname]);
+
+  if (!authLoading && isLoggedIn) return null;
 
   function validate(): string | null {
     if (!/^\S+@\S+\.\S+$/.test(email)) return 'Enter a valid email address';
@@ -57,7 +78,18 @@ export function LoginSignupPage() {
   return (
     <div className="pc-page">
       <div className="pc-header" style={{ justifyContent: 'center' }}>
-        <span className="pc-wordmark">CSV ARCHIVE</span>
+        <span
+          className="pc-wordmark"
+          role="link"
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') navigate('/');
+          }}
+        >
+          CSV ARCHIVE
+        </span>
       </div>
 
       <div
@@ -82,6 +114,7 @@ export function LoginSignupPage() {
               onClick={() => {
                 setMode('login');
                 setFieldError(null);
+                navigate('/login', { replace: true });
               }}
               style={{
                 flex: 1,
@@ -107,6 +140,7 @@ export function LoginSignupPage() {
               onClick={() => {
                 setMode('signup');
                 setFieldError(null);
+                navigate('/signup', { replace: true });
               }}
               style={{
                 flex: 1,
@@ -233,7 +267,7 @@ export function LoginSignupPage() {
                 NO ACCOUNT?{' '}
                 <span
                   style={{ color: 'var(--pc-accent)', cursor: 'pointer' }}
-                  onClick={() => setMode('signup')}
+                  onClick={() => navigate('/signup')}
                 >
                   SIGN UP
                 </span>
@@ -243,7 +277,7 @@ export function LoginSignupPage() {
                 HAVE AN ACCOUNT?{' '}
                 <span
                   style={{ color: 'var(--pc-accent)', cursor: 'pointer' }}
-                  onClick={() => setMode('login')}
+                  onClick={() => navigate('/login')}
                 >
                   LOG IN
                 </span>

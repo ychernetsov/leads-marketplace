@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
+import { Header } from '../components/Header';
 
 import { getApiBaseUrl } from '../lib/apiBase';
 
@@ -29,11 +30,21 @@ export function AdminUploadPage() {
   if (!isLoggedIn || !isAdmin) {
     return (
       <div className="pc-page">
-        <div className="pc-header" style={{ justifyContent: 'center' }}>
-          <span className="pc-wordmark">CSV ARCHIVE</span>
-        </div>
+        <Header />
         <div className="pc-error-state">
           <div className="pc-row-title">ADMIN ACCESS REQUIRED</div>
+          <div className="pc-row-meta" style={{ marginTop: 8 }}>
+            {isLoggedIn
+              ? "YOU'RE SIGNED IN, BUT THIS ACCOUNT ISN'T AN ADMIN."
+              : 'LOG IN WITH AN ADMIN ACCOUNT TO UPLOAD DATASETS.'}
+          </div>
+          <button
+            className="pc-pill pc-pill-accent"
+            style={{ marginTop: 20 }}
+            onClick={() => navigate(isLoggedIn ? '/' : '/login')}
+          >
+            {isLoggedIn ? 'BACK TO CATALOG' : 'GO TO LOGIN'}
+          </button>
         </div>
       </div>
     );
@@ -92,10 +103,21 @@ export function AdminUploadPage() {
       await uploadToR2(uploadUrl, file);
 
       setStatus('processing');
-      await fetch(`${API_URL}/files/${fileId}/process`, {
+      const processRes = await fetch(`${API_URL}/files/${fileId}/process`, {
         method: 'POST',
         credentials: 'include',
       });
+      const processBody = await processRes.json().catch(() => ({}));
+
+      if (!processRes.ok) {
+        // The upload itself succeeded, but the CSV failed processing
+        // (e.g. no data rows). Previously this was silently treated as a
+        // success, leaving a broken "failed" file for admins to wonder
+        // about — now it's surfaced immediately so it can be fixed/retried.
+        throw new Error(
+          processBody.error || 'File processing failed — check the CSV and try again',
+        );
+      }
 
       setStatus('ready');
       addToast('success', 'File uploaded and ready in catalog');
@@ -114,19 +136,7 @@ export function AdminUploadPage() {
 
   return (
     <div className="pc-page">
-      <div className="pc-header">
-        <span className="pc-wordmark">CSV ARCHIVE</span>
-        <div style={{ display: 'flex', gap: 18 }}>
-          <button
-            type="button"
-            className="pc-nav-link"
-            onClick={() => navigate('/')}
-          >
-            CATALOG
-          </button>
-          <span className="pc-nav-link active">UPLOAD</span>
-        </div>
-      </div>
+      <Header active="upload" />
 
       <div style={{ padding: 32, maxWidth: 480, margin: '0 auto' }}>
         <div
