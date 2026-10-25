@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { prisma } from '../lib/prisma.js';
 import {
+  deleteStoredObjects,
   getPrivateObjectBuffer,
   getPublicSampleUrl,
   getSignedDownloadUrl,
@@ -63,6 +64,193 @@ filesRouter.get('/', async (_req, res) => {
   } catch {
     res.status(500).json({ error: 'Failed to fetch files' });
   }
+});
+
+// ---------------------------------------------------------------------------
+// Admin dataset management (list / edit / delete, single + bulk)
+// NOTE: these must be registered before the generic `/:id/...` routes so
+// that paths like `/admin/list` or `/bulk` aren't swallowed by `:id`.
+// ---------------------------------------------------------------------------
+
+const editFieldsSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Title is required')
+    .max(200, 'Title must be 200 characters or less'),
+  description: z
+    .string()
+    .trim()
+    .min(1, 'Description is required')
+    .max(2000, 'Description must be 2000 characters or less'),
+  priceCents: z
+    .number('Price must be a number')
+    .int('Price must be a whole number of cents')
+    .positive('Price must be greater than zero')
+    .max(100_000_000, 'Price is too large'),
+});
+
+const uuidListSchema = z.array(uuidSchema).min(1).max(500);
+
+function toAdminFile(file: {
+  id: string;
+  title: string;
+  description: string;
+  priceCents: number;
+  currency: string;
+  numRows: number | null;
+  sizeBytes: bigint | null;
+  originalFilename: string | null;
+  sampleUrl: string | null;
+  status: string;
+  createdAt: Date;
+  _count?: { orders: number };
+}) {
+  return {
+    id: file.id,
+    title: file.title,
+    description: file.description,
+    priceCents: file.priceCents,
+    currency: file.currency,
+    numRows: file.numRows,
+    sizeBytes: file.sizeBytes === null ? null : Number(file.sizeBytes),
+    originalFilename: file.originalFilename,
+    sampleUrl: file.sampleUrl,
+    status: file.status,
+    createdAt: file.createdAt,
+    orderCount: file._count?.orders ?? 0,
+  };
+}
+
+const adminFileSelect = {
+  id: true,
+  title: true,
+  description: true,
+  priceCents: true,
+  currency: true,
+  numRows: true,
+  sizeBytes: true,
+  originalFilename: true,
+  sampleUrl: true,
+  status: true,
+  createdAt: true,
+  _count: { select: { orders: true } },
+} as const;
+
+filesRouter.get('/admin/list', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const files = await prisma.file.findMany({
+      select: adminFileSelect,
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(files.map(toAdminFile));
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch files' });
+  }
+});
+
+filesRouter.patch('/bulk', requireAuth, requireAdmin, async (req, res) => {
+  const parsed = z
+    .object({
+      ids: uuidListSchema,
+      description: editFieldsSchema.shape.description.optional(),
+      priceCents: editFieldsSchema.shape.priceCents.optional(),
+    })
+    .refine((b) => b.description !== undefined || b.priceCents !== undefined, {
+      message: 'Provide at least one field to update',
+    })
+    .safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: parsed.error.issues[0]?.message || 'Invalid bulk edit payload',
+    });
+  }
+
+  const { ids, description, priceCents } = parsed.data;
+  const data: { description?: string; priceCents?: number } = {};
+  if (description !== undefined) data.description = description;
+  if (priceCents !== undefined) data.priceCents = priceCents;
+
+  const result = await prisma.file.updateMany({
+    where: { id: { in: ids } },
+    data,
+  });
+  res.json({ updated: result.count });
+});
+
+filesRouter.post(
+  '/bulk-delete',
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    const parsed = z.object({ ids: uuidListSchema }).safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid bulk delete payload' });
+    }
+
+    const files = await prisma.file.findMany({
+      where: { id: { in: parsed.data.ids } },
+      select: { id: true, r2KeyFull: true, r2KeySample: true },
+    });
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No matching files found' });
+    }
+    const ids = files.map((f) => f.id);
+
+    const [, deleted] = await prisma.$transaction([
+      prisma.order.deleteMany({ where: { fileId: { in: ids } } }),
+      prisma.file.deleteMany({ where: { id: { in: ids } } }),
+    ]);
+
+    await Promise.all(files.map((f) => deleteStoredObjects(f)));
+    res.json({ deleted: deleted.count });
+  },
+);
+
+filesRouter.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
+  const idResult = uuidSchema.safeParse(req.params.id);
+  if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
+
+  const parsed = editFieldsSchema.partial().safeParse(req.body);
+  if (!parsed.success || Object.keys(parsed.data).length === 0) {
+    return res.status(400).json({
+      error: parsed.success
+        ? 'Provide at least one field to update'
+        : parsed.error.issues[0]?.message || 'Invalid file data',
+    });
+  }
+
+  const existing = await prisma.file.findUnique({
+    where: { id: idResult.data },
+    select: { id: true },
+  });
+  if (!existing) return res.status(404).json({ error: 'File not found' });
+
+  const updated = await prisma.file.update({
+    where: { id: idResult.data },
+    data: parsed.data,
+    select: adminFileSelect,
+  });
+  res.json(toAdminFile(updated));
+});
+
+filesRouter.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+  const idResult = uuidSchema.safeParse(req.params.id);
+  if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
+
+  const file = await prisma.file.findUnique({
+    where: { id: idResult.data },
+    select: { id: true, r2KeyFull: true, r2KeySample: true },
+  });
+  if (!file) return res.status(404).json({ error: 'File not found' });
+
+  await prisma.$transaction([
+    prisma.order.deleteMany({ where: { fileId: file.id } }),
+    prisma.file.delete({ where: { id: file.id } }),
+  ]);
+  await deleteStoredObjects(file);
+
+  res.status(204).send();
 });
 
 filesRouter.get('/:id/sample-url', async (req, res) => {

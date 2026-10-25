@@ -122,6 +122,7 @@ export function AdminUploadPage() {
       setStatus('ready');
       addToast('success', 'File uploaded and ready in catalog');
       queryClient.invalidateQueries({ queryKey: ['files'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'files'] });
 
       setTitle('');
       setDescription('');

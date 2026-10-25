@@ -68,3 +68,15 @@ export async function writePrivateObject(key: string, body: Buffer) {
 export async function readPublicObject(key: string): Promise<Buffer> {
   return fs.readFile(publicPath(key));
 }
+
+/** Best-effort removal of a dataset's stored objects (full + sample). */
+export async function deleteStoredObjects(
+  keys: { r2KeyFull?: string | null; r2KeySample?: string | null },
+) {
+  const targets: string[] = [];
+  if (keys.r2KeyFull) targets.push(privatePath(keys.r2KeyFull));
+  if (keys.r2KeySample) targets.push(publicPath(keys.r2KeySample));
+  await Promise.all(
+    targets.map((p) => fs.rm(p, { force: true }).catch(() => undefined)),
+  );
+}

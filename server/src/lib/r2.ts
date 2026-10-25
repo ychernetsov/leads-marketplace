@@ -30,3 +30,17 @@ export async function uploadPublicSample(key: string, body: Buffer) {
 export function getPublicSampleUrl(key: string) {
   return impl().getPublicSampleUrl(key);
 }
+
+/**
+ * Remove the stored objects backing a dataset. Only the local mock storage
+ * is cleaned up in dev:mocks; real R2 cleanup is intentionally not wired
+ * here (3rd-party integration is out of scope), so in real mode this is a
+ * no-op and objects are left in the bucket.
+ */
+export async function deleteStoredObjects(keys: {
+  r2KeyFull?: string | null;
+  r2KeySample?: string | null;
+}) {
+  if (!isMocksMode()) return;
+  return r2Mock.deleteStoredObjects(keys);
+}

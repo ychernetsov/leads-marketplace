@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
 
-type ActivePage = 'catalog' | 'orders' | 'upload';
+type ActivePage = 'catalog' | 'orders' | 'upload' | 'datasets';
 
 interface HeaderProps {
   /** Which nav link (if any) should be highlighted as the current page. */
@@ -74,14 +74,23 @@ export function Header({ active }: HeaderProps) {
         {!isLoading && isLoggedIn && (
           <>
             {isAdmin ? (
-              <button
-                type="button"
-                className={`pc-nav-link${active === 'upload' ? ' active' : ''}`}
-                style={{ color: 'var(--pc-accent)' }}
-                onClick={() => navigate('/admin/upload')}
-              >
-                UPLOAD
-              </button>
+              <>
+                <button
+                  type="button"
+                  className={`pc-nav-link${active === 'datasets' ? ' active' : ''}`}
+                  onClick={() => navigate('/admin/datasets')}
+                >
+                  DATASETS
+                </button>
+                <button
+                  type="button"
+                  className={`pc-nav-link${active === 'upload' ? ' active' : ''}`}
+                  style={{ color: 'var(--pc-accent)' }}
+                  onClick={() => navigate('/admin/upload')}
+                >
+                  UPLOAD
+                </button>
+              </>
             ) : (
               <button
                 type="button"
