@@ -32,3 +32,13 @@ export type File = Prisma.FileModel
  * 
  */
 export type Order = Prisma.OrderModel
+/**
+ * Model Label
+ * 
+ */
+export type Label = Prisma.LabelModel
+/**
+ * Model OrderLabel
+ * 
+ */
+export type OrderLabel = Prisma.OrderLabelModel

@@ -45,6 +45,10 @@ export type OrderMinAggregateOutputType = {
   status: $Enums.OrderStatus | null
   createdAt: Date | null
   paidAt: Date | null
+  customTitle: string | null
+  customDescription: string | null
+  archivedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type OrderMaxAggregateOutputType = {
@@ -58,6 +62,10 @@ export type OrderMaxAggregateOutputType = {
   status: $Enums.OrderStatus | null
   createdAt: Date | null
   paidAt: Date | null
+  customTitle: string | null
+  customDescription: string | null
+  archivedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type OrderCountAggregateOutputType = {
@@ -71,6 +79,10 @@ export type OrderCountAggregateOutputType = {
   status: number
   createdAt: number
   paidAt: number
+  customTitle: number
+  customDescription: number
+  archivedAt: number
+  deletedAt: number
   _all: number
 }
 
@@ -94,6 +106,10 @@ export type OrderMinAggregateInputType = {
   status?: true
   createdAt?: true
   paidAt?: true
+  customTitle?: true
+  customDescription?: true
+  archivedAt?: true
+  deletedAt?: true
 }
 
 export type OrderMaxAggregateInputType = {
@@ -107,6 +123,10 @@ export type OrderMaxAggregateInputType = {
   status?: true
   createdAt?: true
   paidAt?: true
+  customTitle?: true
+  customDescription?: true
+  archivedAt?: true
+  deletedAt?: true
 }
 
 export type OrderCountAggregateInputType = {
@@ -120,6 +140,10 @@ export type OrderCountAggregateInputType = {
   status?: true
   createdAt?: true
   paidAt?: true
+  customTitle?: true
+  customDescription?: true
+  archivedAt?: true
+  deletedAt?: true
   _all?: true
 }
 
@@ -220,6 +244,10 @@ export type OrderGroupByOutputType = {
   status: $Enums.OrderStatus
   createdAt: Date
   paidAt: Date | null
+  customTitle: string | null
+  customDescription: string | null
+  archivedAt: Date | null
+  deletedAt: Date | null
   _count: OrderCountAggregateOutputType | null
   _avg: OrderAvgAggregateOutputType | null
   _sum: OrderSumAggregateOutputType | null
@@ -256,8 +284,13 @@ export type OrderWhereInput = {
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   paidAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  customTitle?: Prisma.StringNullableFilter<"Order"> | string | null
+  customDescription?: Prisma.StringNullableFilter<"Order"> | string | null
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   file?: Prisma.XOR<Prisma.FileScalarRelationFilter, Prisma.FileWhereInput>
+  labels?: Prisma.OrderLabelListRelationFilter
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -271,8 +304,13 @@ export type OrderOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  customTitle?: Prisma.SortOrderInput | Prisma.SortOrder
+  customDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   file?: Prisma.FileOrderByWithRelationInput
+  labels?: Prisma.OrderLabelOrderByRelationAggregateInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -289,8 +327,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   paidAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  customTitle?: Prisma.StringNullableFilter<"Order"> | string | null
+  customDescription?: Prisma.StringNullableFilter<"Order"> | string | null
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   file?: Prisma.XOR<Prisma.FileScalarRelationFilter, Prisma.FileWhereInput>
+  labels?: Prisma.OrderLabelListRelationFilter
 }, "id" | "stripeCheckoutSessionId" | "stripePaymentIntentId">
 
 export type OrderOrderByWithAggregationInput = {
@@ -304,6 +347,10 @@ export type OrderOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  customTitle?: Prisma.SortOrderInput | Prisma.SortOrder
+  customDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrderCountOrderByAggregateInput
   _avg?: Prisma.OrderAvgOrderByAggregateInput
   _max?: Prisma.OrderMaxOrderByAggregateInput
@@ -325,6 +372,10 @@ export type OrderScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  customTitle?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  customDescription?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateInput = {
@@ -336,8 +387,13 @@ export type OrderCreateInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
   file: Prisma.FileCreateNestedOneWithoutOrdersInput
+  labels?: Prisma.OrderLabelCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -351,6 +407,11 @@ export type OrderUncheckedCreateInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  labels?: Prisma.OrderLabelUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUpdateInput = {
@@ -362,8 +423,13 @@ export type OrderUpdateInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
   file?: Prisma.FileUpdateOneRequiredWithoutOrdersNestedInput
+  labels?: Prisma.OrderLabelUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -377,6 +443,11 @@ export type OrderUncheckedUpdateInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  labels?: Prisma.OrderLabelUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateManyInput = {
@@ -390,6 +461,10 @@ export type OrderCreateManyInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
 }
 
 export type OrderUpdateManyMutationInput = {
@@ -401,6 +476,10 @@ export type OrderUpdateManyMutationInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderUncheckedUpdateManyInput = {
@@ -414,6 +493,10 @@ export type OrderUncheckedUpdateManyInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderListRelationFilter = {
@@ -437,6 +520,10 @@ export type OrderCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  customTitle?: Prisma.SortOrder
+  customDescription?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type OrderAvgOrderByAggregateInput = {
@@ -454,6 +541,10 @@ export type OrderMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  customTitle?: Prisma.SortOrder
+  customDescription?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type OrderMinOrderByAggregateInput = {
@@ -467,10 +558,19 @@ export type OrderMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   paidAt?: Prisma.SortOrder
+  customTitle?: Prisma.SortOrder
+  customDescription?: Prisma.SortOrder
+  archivedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type OrderSumOrderByAggregateInput = {
   amountCents?: Prisma.SortOrder
+}
+
+export type OrderScalarRelationFilter = {
+  is?: Prisma.OrderWhereInput
+  isNot?: Prisma.OrderWhereInput
 }
 
 export type OrderCreateNestedManyWithoutUserInput = {
@@ -561,8 +661,18 @@ export type EnumOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.OrderStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
+export type OrderCreateNestedOneWithoutLabelsInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutLabelsInput, Prisma.OrderUncheckedCreateWithoutLabelsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutLabelsInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneRequiredWithoutLabelsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutLabelsInput, Prisma.OrderUncheckedCreateWithoutLabelsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutLabelsInput
+  upsert?: Prisma.OrderUpsertWithoutLabelsInput
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutLabelsInput, Prisma.OrderUpdateWithoutLabelsInput>, Prisma.OrderUncheckedUpdateWithoutLabelsInput>
 }
 
 export type OrderCreateWithoutUserInput = {
@@ -574,7 +684,12 @@ export type OrderCreateWithoutUserInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
   file: Prisma.FileCreateNestedOneWithoutOrdersInput
+  labels?: Prisma.OrderLabelCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutUserInput = {
@@ -587,6 +702,11 @@ export type OrderUncheckedCreateWithoutUserInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  labels?: Prisma.OrderLabelUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutUserInput = {
@@ -628,6 +748,10 @@ export type OrderScalarWhereInput = {
   status?: Prisma.EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   paidAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  customTitle?: Prisma.StringNullableFilter<"Order"> | string | null
+  customDescription?: Prisma.StringNullableFilter<"Order"> | string | null
+  archivedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  deletedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
 }
 
 export type OrderCreateWithoutFileInput = {
@@ -639,7 +763,12 @@ export type OrderCreateWithoutFileInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutOrdersInput
+  labels?: Prisma.OrderLabelCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutFileInput = {
@@ -652,6 +781,11 @@ export type OrderUncheckedCreateWithoutFileInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  labels?: Prisma.OrderLabelUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutFileInput = {
@@ -679,6 +813,90 @@ export type OrderUpdateManyWithWhereWithoutFileInput = {
   data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutFileInput>
 }
 
+export type OrderCreateWithoutLabelsInput = {
+  id?: string
+  amountCents: number
+  currency?: string
+  stripeCheckoutSessionId?: string | null
+  stripePaymentIntentId?: string | null
+  status?: $Enums.OrderStatus
+  createdAt?: Date | string
+  paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutOrdersInput
+  file: Prisma.FileCreateNestedOneWithoutOrdersInput
+}
+
+export type OrderUncheckedCreateWithoutLabelsInput = {
+  id?: string
+  userId: string
+  fileId: string
+  amountCents: number
+  currency?: string
+  stripeCheckoutSessionId?: string | null
+  stripePaymentIntentId?: string | null
+  status?: $Enums.OrderStatus
+  createdAt?: Date | string
+  paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+}
+
+export type OrderCreateOrConnectWithoutLabelsInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutLabelsInput, Prisma.OrderUncheckedCreateWithoutLabelsInput>
+}
+
+export type OrderUpsertWithoutLabelsInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutLabelsInput, Prisma.OrderUncheckedUpdateWithoutLabelsInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutLabelsInput, Prisma.OrderUncheckedCreateWithoutLabelsInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutLabelsInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutLabelsInput, Prisma.OrderUncheckedUpdateWithoutLabelsInput>
+}
+
+export type OrderUpdateWithoutLabelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  amountCents?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCheckoutSessionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
+  file?: Prisma.FileUpdateOneRequiredWithoutOrdersNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutLabelsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  fileId?: Prisma.StringFieldUpdateOperationsInput | string
+  amountCents?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCheckoutSessionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
 export type OrderCreateManyUserInput = {
   id?: string
   fileId: string
@@ -689,6 +907,10 @@ export type OrderCreateManyUserInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutUserInput = {
@@ -700,7 +922,12 @@ export type OrderUpdateWithoutUserInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   file?: Prisma.FileUpdateOneRequiredWithoutOrdersNestedInput
+  labels?: Prisma.OrderLabelUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutUserInput = {
@@ -713,6 +940,11 @@ export type OrderUncheckedUpdateWithoutUserInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  labels?: Prisma.OrderLabelUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutUserInput = {
@@ -725,6 +957,10 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type OrderCreateManyFileInput = {
@@ -737,6 +973,10 @@ export type OrderCreateManyFileInput = {
   status?: $Enums.OrderStatus
   createdAt?: Date | string
   paidAt?: Date | string | null
+  customTitle?: string | null
+  customDescription?: string | null
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
 }
 
 export type OrderUpdateWithoutFileInput = {
@@ -748,7 +988,12 @@ export type OrderUpdateWithoutFileInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput
+  labels?: Prisma.OrderLabelUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutFileInput = {
@@ -761,6 +1006,11 @@ export type OrderUncheckedUpdateWithoutFileInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  labels?: Prisma.OrderLabelUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutFileInput = {
@@ -773,8 +1023,41 @@ export type OrderUncheckedUpdateManyWithoutFileInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
+
+/**
+ * Count Type OrderCountOutputType
+ */
+
+export type OrderCountOutputType = {
+  labels: number
+}
+
+export type OrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  labels?: boolean | OrderCountOutputTypeCountLabelsArgs
+}
+
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrderCountOutputType
+   */
+  select?: Prisma.OrderCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountLabelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderLabelWhereInput
+}
 
 
 export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -788,8 +1071,14 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   status?: boolean
   createdAt?: boolean
   paidAt?: boolean
+  customTitle?: boolean
+  customDescription?: boolean
+  archivedAt?: boolean
+  deletedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   file?: boolean | Prisma.FileDefaultArgs<ExtArgs>
+  labels?: boolean | Prisma.Order$labelsArgs<ExtArgs>
+  _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -803,6 +1092,10 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   status?: boolean
   createdAt?: boolean
   paidAt?: boolean
+  customTitle?: boolean
+  customDescription?: boolean
+  archivedAt?: boolean
+  deletedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   file?: boolean | Prisma.FileDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -818,6 +1111,10 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   status?: boolean
   createdAt?: boolean
   paidAt?: boolean
+  customTitle?: boolean
+  customDescription?: boolean
+  archivedAt?: boolean
+  deletedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   file?: boolean | Prisma.FileDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
@@ -833,12 +1130,18 @@ export type OrderSelectScalar = {
   status?: boolean
   createdAt?: boolean
   paidAt?: boolean
+  customTitle?: boolean
+  customDescription?: boolean
+  archivedAt?: boolean
+  deletedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "fileId" | "amountCents" | "currency" | "stripeCheckoutSessionId" | "stripePaymentIntentId" | "status" | "createdAt" | "paidAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "fileId" | "amountCents" | "currency" | "stripeCheckoutSessionId" | "stripePaymentIntentId" | "status" | "createdAt" | "paidAt" | "customTitle" | "customDescription" | "archivedAt" | "deletedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   file?: boolean | Prisma.FileDefaultArgs<ExtArgs>
+  labels?: boolean | Prisma.Order$labelsArgs<ExtArgs>
+  _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -854,6 +1157,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     file: Prisma.$FilePayload<ExtArgs>
+    labels: Prisma.$OrderLabelPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -866,6 +1170,14 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     status: $Enums.OrderStatus
     createdAt: Date
     paidAt: Date | null
+    customTitle: string | null
+    customDescription: string | null
+    archivedAt: Date | null
+    /**
+     * Soft delete by the buyer: hidden from their purchases, but the order
+     * record itself is never removed.
+     */
+    deletedAt: Date | null
   }, ExtArgs["result"]["order"]>
   composites: {}
 }
@@ -1262,6 +1574,7 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   file<T extends Prisma.FileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileDefaultArgs<ExtArgs>>): Prisma.Prisma__FileClient<runtime.Types.Result.GetResult<Prisma.$FilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  labels<T extends Prisma.Order$labelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$labelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderLabelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1301,6 +1614,10 @@ export interface OrderFieldRefs {
   readonly status: Prisma.FieldRef<"Order", 'OrderStatus'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly paidAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly customTitle: Prisma.FieldRef<"Order", 'String'>
+  readonly customDescription: Prisma.FieldRef<"Order", 'String'>
+  readonly archivedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"Order", 'DateTime'>
 }
     
 
@@ -1697,6 +2014,30 @@ export type OrderDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Orders to delete.
    */
   limit?: number
+}
+
+/**
+ * Order.labels
+ */
+export type Order$labelsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrderLabel
+   */
+  select?: Prisma.OrderLabelSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrderLabel
+   */
+  omit?: Prisma.OrderLabelOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderLabelInclude<ExtArgs> | null
+  where?: Prisma.OrderLabelWhereInput
+  orderBy?: Prisma.OrderLabelOrderByWithRelationInput | Prisma.OrderLabelOrderByWithRelationInput[]
+  cursor?: Prisma.OrderLabelWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderLabelScalarFieldEnum | Prisma.OrderLabelScalarFieldEnum[]
 }
 
 /**

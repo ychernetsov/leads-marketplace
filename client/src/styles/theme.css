@@ -307,3 +307,95 @@
   align-items: center;
   gap: 8px;
 }
+
+/* --- Buyer library (orders) -------------------------------------------- */
+
+.pc-row.archived .pc-row-title,
+.pc-row.archived .pc-row-meta {
+  opacity: 0.65;
+}
+
+.pc-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pc-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 24px;
+  border-bottom: 1px dashed var(--pc-border);
+}
+
+.pc-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.pc-segmented {
+  display: inline-flex;
+  border: 1px solid var(--pc-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pc-segmented button {
+  border: none;
+  background: transparent;
+  color: var(--pc-text-muted);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.pc-segmented button.active {
+  background: var(--pc-accent);
+  color: var(--pc-accent-text);
+  font-weight: 500;
+}
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid;
+  line-height: 1.6;
+  user-select: none;
+}
+
+.pc-chip-remove {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+
+.pc-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--pc-border);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+
+.pc-check-row:last-child {
+  border-bottom: none;
+}

@@ -1,20 +1,27 @@
 import { ChangeEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
 import { Header } from '../components/Header';
+import { AccessGate } from '../components/AccessGate';
 
 import { getApiBaseUrl } from '../lib/apiBase';
+import { queryKeys } from '../hooks/queryKeys';
 
 const API_URL = getApiBaseUrl();
 
 type UploadStatus = 'idle' | 'uploading' | 'processing' | 'ready' | 'failed';
 
 export function AdminUploadPage() {
-  const navigate = useNavigate();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  return (
+    <AccessGate admin purpose="upload datasets">
+      <UploadForm />
+    </AccessGate>
+  );
+}
+
+/** The upload form itself; rendered only for admins. */
+function UploadForm() {
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
 
@@ -25,30 +32,6 @@ export function AdminUploadPage() {
   const [status, setStatus] = useState<UploadStatus>('idle');
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-
-  if (isLoading) return null;
-  if (!isLoggedIn || !isAdmin) {
-    return (
-      <div className="pc-page">
-        <Header />
-        <div className="pc-error-state">
-          <div className="pc-row-title">ADMIN ACCESS REQUIRED</div>
-          <div className="pc-row-meta" style={{ marginTop: 8 }}>
-            {isLoggedIn
-              ? "YOU'RE SIGNED IN, BUT THIS ACCOUNT ISN'T AN ADMIN."
-              : 'LOG IN WITH AN ADMIN ACCOUNT TO UPLOAD DATASETS.'}
-          </div>
-          <button
-            className="pc-pill pc-pill-accent"
-            style={{ marginTop: 20 }}
-            onClick={() => navigate(isLoggedIn ? '/' : '/login')}
-          >
-            {isLoggedIn ? 'BACK TO CATALOG' : 'GO TO LOGIN'}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   function handleFileSelect(f: File) {
     setFile(f);
@@ -110,10 +93,6 @@ export function AdminUploadPage() {
       const processBody = await processRes.json().catch(() => ({}));
 
       if (!processRes.ok) {
-        // The upload itself succeeded, but the CSV failed processing
-        // (e.g. no data rows). Previously this was silently treated as a
-        // success, leaving a broken "failed" file for admins to wonder
-        // about — now it's surfaced immediately so it can be fixed/retried.
         throw new Error(
           processBody.error || 'File processing failed — check the CSV and try again',
         );
@@ -121,17 +100,20 @@ export function AdminUploadPage() {
 
       setStatus('ready');
       addToast('success', 'File uploaded and ready in catalog');
-      queryClient.invalidateQueries({ queryKey: ['files'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'files'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminFiles });
 
       setTitle('');
       setDescription('');
       setPriceDollars('4.00');
       setFile(null);
       setProgress(0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('failed');
-      addToast('error', err.message || 'Upload failed');
+      addToast(
+        'error',
+        err instanceof Error ? err.message : 'Upload failed',
+      );
     }
   }
 

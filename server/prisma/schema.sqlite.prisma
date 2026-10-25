@@ -34,6 +34,7 @@ model User {
 
   orders        Order[]
   uploadedFiles File[]  @relation("UploadedBy")
+  labels        Label[]
 
   @@map("users")
 }
@@ -53,6 +54,9 @@ model File {
   status           FileStatus @default(uploading)
   uploadedBy       String?    @map("uploaded_by")
   createdAt        DateTime   @default(now()) @map("created_at")
+  /// Set when an admin removes the dataset from the catalog. The row (and the
+  /// stored full file) is kept so existing buyers keep their access.
+  deletedAt        DateTime?  @map("deleted_at")
 
   uploader User?   @relation("UploadedBy", fields: [uploadedBy], references: [id])
   orders   Order[]
@@ -72,8 +76,41 @@ model Order {
   createdAt                DateTime    @default(now()) @map("created_at")
   paidAt                   DateTime?   @map("paid_at")
 
+  // --- buyer-owned customisation of a purchased item ---
+  customTitle       String?   @map("custom_title")
+  customDescription String?   @map("custom_description")
+  archivedAt        DateTime? @map("archived_at")
+  /// Soft delete by the buyer: hidden from their purchases, but the order
+  /// record itself is never removed.
+  deletedAt         DateTime? @map("deleted_at")
+
   user User @relation(fields: [userId], references: [id])
   file File @relation(fields: [fileId], references: [id])
+  labels OrderLabel[]
 
   @@map("orders")
+}
+
+model Label {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User         @relation(fields: [userId], references: [id])
+  orders OrderLabel[]
+
+  @@unique([userId, name])
+  @@map("labels")
+}
+
+model OrderLabel {
+  orderId String @map("order_id")
+  labelId String @map("label_id")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([orderId, labelId])
+  @@map("order_labels")
 }

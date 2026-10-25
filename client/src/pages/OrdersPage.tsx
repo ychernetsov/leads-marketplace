@@ -1,75 +1,86 @@
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, ApiError } from '../lib/api';
-import { triggerFileDownload } from '../lib/download';
-import { useUiStore } from '../store/uiStore';
 import { useAuth } from '../hooks/useAuth';
+import { useDownload } from '../hooks/useDownload';
+import { useLabels } from '../hooks/useLabels';
+import { useMyOrders } from '../hooks/useMyOrders';
+import type { PurchasedItem } from '../types/order';
+import {
+  DEFAULT_ORDER_FILTERS,
+  filterOrders,
+  sortOrders,
+  type OrderFilters,
+  type OrderSortKey,
+} from '../utilities/orders';
+import { pluralize } from '../utilities/format';
+import { AccessGate } from '../components/AccessGate';
 import { Header } from '../components/Header';
+import { ListEmpty, ListError, ListSkeleton } from '../components/ListState';
+import { DeleteOrderDialog } from '../components/orders/DeleteOrderDialog';
+import { ManageLabelsDialog } from '../components/orders/ManageLabelsDialog';
+import { OrderEditDialog } from '../components/orders/OrderEditDialog';
+import { OrderLabelsDialog } from '../components/orders/OrderLabelsDialog';
+import { OrderRow } from '../components/orders/OrderRow';
+import { OrdersToolbar } from '../components/orders/OrdersToolbar';
 
-interface Order {
-  id: string;
-  fileId: string;
-  fileTitle: string;
-  paidAt: string;
-}
+type Dialog =
+  | { kind: 'edit'; item: PurchasedItem }
+  | { kind: 'labels'; item: PurchasedItem }
+  | { kind: 'delete'; item: PurchasedItem }
+  | { kind: 'manage-labels' }
+  | null;
 
 export function OrdersPage() {
   const navigate = useNavigate();
-  const { isLoggedIn, isAdmin, isLoading: authLoading } = useAuth();
-  const addToast = useUiStore((s) => s.addToast);
+  const { isAdmin, isLoading: authLoading } = useAuth();
 
-  // NOTE: every hook below must run unconditionally on every render
-  // (admins and logged-out visitors included) — React requires the exact
-  // same hooks to be called in the exact same order every time. Redirects
-  // happen via the effect + the early `return null` further down, which
-  // only happens *after* all hooks have already been called.
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-
-  const {
-    data: orders,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ['orders', 'mine'],
-    queryFn: () => api.get<Order[]>('/files/orders/mine'),
-    // Admins don't have purchases, and logged-out visitors can't have any
-    // either — both get redirected away immediately below, so there's no
-    // reason to hit the API (and fail with a 401/redirect loop) for them.
-    enabled: !authLoading && isLoggedIn && !isAdmin,
-  });
-
+  // Admins have no purchases; send them to their own area instead.
+  // (All hooks below still run unconditionally — see the early return at the end.)
   useEffect(() => {
-    if (authLoading) return;
-    if (!isLoggedIn) {
-      navigate('/login', { replace: true });
-    } else if (isAdmin) {
-      navigate('/admin/upload', { replace: true });
-    }
-  }, [authLoading, isLoggedIn, isAdmin, navigate]);
+    if (!authLoading && isAdmin) navigate('/admin/upload', { replace: true });
+  }, [authLoading, isAdmin, navigate]);
 
-  if (!authLoading && (!isLoggedIn || isAdmin)) return null;
+  if (!authLoading && isAdmin) return null;
 
-  async function handleDownloadAgain(order: Order) {
-    setDownloadingId(order.id);
-    try {
-      const { url } = await api.get<{ url: string }>(
-        `/files/${order.fileId}/download-url`,
-      );
-      await triggerFileDownload(url, `${order.fileTitle}.csv`);
-      addToast('success', 'Download started');
-    } catch (err: any) {
-      if (err instanceof ApiError && err.status === 409) {
-        addToast('error', 'Payment still processing — try again shortly');
-      } else if (err instanceof ApiError && err.status === 403) {
-        addToast('error', 'No valid purchase found for this file');
-      } else {
-        addToast('error', err.message || 'Download failed');
-      }
-    } finally {
-      setDownloadingId(null);
-    }
+  return (
+    <AccessGate purpose="see your purchases">
+      <OrdersLibrary />
+    </AccessGate>
+  );
+}
+
+/** The buyer's library, rendered only for a logged-in regular user. */
+function OrdersLibrary() {
+  const orders = useMyOrders();
+  const labels = useLabels();
+  const { download, downloadingId } = useDownload();
+
+  const [filters, setFilters] = useState<OrderFilters>(DEFAULT_ORDER_FILTERS);
+  const [sort, setSort] = useState<OrderSortKey>('newest');
+  const [dialog, setDialog] = useState<Dialog>(null);
+
+  const items = orders.data ?? [];
+  const visible = useMemo(() => sortOrders(filterOrders(items, filters), sort), [items, filters, sort]);
+  const counts = useMemo(
+    () => ({
+      active: items.filter((i) => i.archivedAt === null).length,
+      archived: items.filter((i) => i.archivedAt !== null).length,
+    }),
+    [items],
+  );
+  const isFiltered =
+    filters.search.trim() !== '' || filters.labelIds.length > 0 || filters.view !== 'all';
+
+  const busy =
+    orders.edit.isPending ||
+    orders.setLabels.isPending ||
+    orders.remove.isPending ||
+    labels.create.isPending ||
+    labels.rename.isPending ||
+    labels.remove.isPending;
+
+  function closeDialog() {
+    if (!busy) setDialog(null);
   }
 
   return (
@@ -77,81 +88,129 @@ export function OrdersPage() {
       <Header active="orders" />
 
       <div className="pc-subheader">
-        {orders ? `${orders.length} FILES PURCHASED` : ''}
+        {orders.data ? pluralize(items.length, 'FILE PURCHASED', 'FILES PURCHASED') : ''}
+        {orders.data && visible.length !== items.length && ` · SHOWING ${visible.length}`}
       </div>
 
-      {isLoading && (
-        <div style={{ padding: 20 }}>
-          {[1, 2].map((i) => (
-            <div key={i} className="pc-skeleton" />
-          ))}
-        </div>
+      {orders.data && items.length > 0 && (
+        <OrdersToolbar
+          filters={filters}
+          sort={sort}
+          labels={labels.data ?? []}
+          counts={counts}
+          onFiltersChange={setFilters}
+          onSortChange={setSort}
+          onManageLabels={() => setDialog({ kind: 'manage-labels' })}
+        />
       )}
 
-      {isError && (
-        <div className="pc-error-state">
-          <div className="pc-row-title">COULDN'T LOAD PURCHASES</div>
-          <div className="pc-row-meta">CHECK YOUR CONNECTION AND TRY AGAIN</div>
-          <button
-            className="pc-pill pc-pill-outline"
-            style={{ marginTop: 16 }}
-            onClick={() => refetch()}
-          >
-            RELOAD
-          </button>
-        </div>
+      {orders.isLoading && <ListSkeleton rows={2} />}
+      {orders.isError && <ListError what="purchases" onRetry={() => orders.refetch()} />}
+
+      {orders.data && items.length === 0 && (
+        <ListEmpty
+          title="NO PURCHASES YET"
+          hint={
+            <>
+              BUY A DATASET AND IT
+              <br />
+              WILL SHOW UP HERE
+            </>
+          }
+          action={
+            <BrowseCatalogButton />
+          }
+        />
       )}
 
-      {orders && orders.length === 0 && (
-        <div className="pc-empty-state">
-          <div className="pc-row-title">NO PURCHASES YET</div>
-          <div className="pc-row-meta">
-            BUY A DATASET AND IT
-            <br />
-            WILL SHOW UP HERE
-          </div>
-          <button
-            className="pc-pill pc-pill-accent"
-            style={{ marginTop: 16 }}
-            onClick={() => navigate('/')}
-          >
-            BROWSE CATALOG
-          </button>
-        </div>
-      )}
-
-      {orders &&
-        orders.map((order) => (
-          <div key={order.id} className="pc-row">
-            <div className="pc-row-perforation" />
-            <div className="pc-row-hole top" />
-            <div className="pc-row-hole bottom" />
-            <div className="pc-row-content">
-              <div className="pc-row-title">
-                {order.fileTitle.toUpperCase()}
-              </div>
-              <div className="pc-row-meta">
-                PURCHASED{' '}
-                {new Date(order.paidAt)
-                  .toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                  .toUpperCase()}
-              </div>
-            </div>
+      {orders.data && items.length > 0 && visible.length === 0 && (
+        <ListEmpty
+          title="NOTHING MATCHES"
+          hint={isFiltered ? 'TRY A DIFFERENT SEARCH, VIEW OR LABEL FILTER' : ''}
+          action={
             <button
               className="pc-pill pc-pill-outline"
-              disabled={downloadingId === order.id}
-              onClick={() => handleDownloadAgain(order)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => setFilters({ ...DEFAULT_ORDER_FILTERS, view: 'all' })}
             >
-              {downloadingId === order.id && <span className="pc-spin" />}
-              {downloadingId === order.id ? 'DOWNLOADING' : 'DOWNLOAD AGAIN'}
+              SHOW EVERYTHING
             </button>
-          </div>
-        ))}
+          }
+        />
+      )}
+
+      {visible.map((item) => (
+        <OrderRow
+          key={item.id}
+          item={item}
+          downloading={downloadingId === item.fileId}
+          onDownload={() => download(item.fileId, item.title)}
+          onEdit={() => setDialog({ kind: 'edit', item })}
+          onLabels={() => setDialog({ kind: 'labels', item })}
+          onToggleArchive={() =>
+            orders.setArchived.mutate({ id: item.id, archived: item.archivedAt === null })
+          }
+          onDelete={() => setDialog({ kind: 'delete', item })}
+        />
+      ))}
+
+      {dialog?.kind === 'edit' && (
+        <OrderEditDialog
+          item={dialog.item}
+          busy={orders.edit.isPending}
+          onClose={closeDialog}
+          onSave={(values) =>
+            orders.edit.mutate({ id: dialog.item.id, ...values }, { onSuccess: () => setDialog(null) })
+          }
+        />
+      )}
+
+      {dialog?.kind === 'labels' && (
+        <OrderLabelsDialog
+          item={dialog.item}
+          labels={labels.data ?? []}
+          busy={orders.setLabels.isPending}
+          onClose={closeDialog}
+          onSave={(labelIds) =>
+            orders.setLabels.mutate(
+              { id: dialog.item.id, labelIds },
+              { onSuccess: () => setDialog(null) },
+            )
+          }
+          onCreateLabel={(name) => labels.create.mutateAsync(name).catch(() => undefined)}
+        />
+      )}
+
+      {dialog?.kind === 'delete' && (
+        <DeleteOrderDialog
+          item={dialog.item}
+          busy={orders.remove.isPending}
+          onClose={closeDialog}
+          onConfirm={() => orders.remove.mutate(dialog.item.id, { onSuccess: () => setDialog(null) })}
+        />
+      )}
+
+      {dialog?.kind === 'manage-labels' && (
+        <ManageLabelsDialog
+          labels={labels.data ?? []}
+          busy={busy}
+          onClose={closeDialog}
+          onCreate={(name) => labels.create.mutate(name)}
+          onRename={(id, name) => labels.rename.mutate({ id, name })}
+          onDelete={(id) => {
+            labels.remove.mutate(id);
+            setFilters((f) => ({ ...f, labelIds: f.labelIds.filter((x) => x !== id) }));
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function BrowseCatalogButton() {
+  const navigate = useNavigate();
+  return (
+    <button className="pc-pill pc-pill-accent" onClick={() => navigate('/')}>
+      BROWSE CATALOG
+    </button>
   );
 }

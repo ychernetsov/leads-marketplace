@@ -46,7 +46,7 @@ filesRouter.get('/', async (_req, res) => {
       // have no sample/price the buyer can act on and would otherwise show
       // up as a dead end in the catalog (sample missing, "buy" failing
       // with a 404 since checkout requires a 'ready' file).
-      where: { status: 'ready' },
+      where: { status: 'ready', deletedAt: null },
       select: {
         id: true,
         title: true,
@@ -140,6 +140,7 @@ const adminFileSelect = {
 filesRouter.get('/admin/list', requireAuth, requireAdmin, async (_req, res) => {
   try {
     const files = await prisma.file.findMany({
+      where: { deletedAt: null },
       select: adminFileSelect,
       orderBy: { createdAt: 'desc' },
     });
@@ -172,11 +173,37 @@ filesRouter.patch('/bulk', requireAuth, requireAdmin, async (req, res) => {
   if (priceCents !== undefined) data.priceCents = priceCents;
 
   const result = await prisma.file.updateMany({
-    where: { id: { in: ids } },
+    where: { id: { in: ids }, deletedAt: null },
     data,
   });
   res.json({ updated: result.count });
 });
+
+const removableFileSelect = {
+  id: true,
+  r2KeyFull: true,
+  r2KeySample: true,
+  _count: { select: { orders: true } },
+} as const;
+
+async function removeDataset(file: {
+  id: string;
+  r2KeyFull: string;
+  r2KeySample: string | null;
+  _count: { orders: number };
+}) {
+  if (file._count.orders === 0) {
+    await prisma.file.delete({ where: { id: file.id } });
+    await deleteStoredObjects(file);
+    return;
+  }
+
+  await prisma.file.update({
+    where: { id: file.id },
+    data: { deletedAt: new Date(), r2KeySample: null, sampleUrl: null },
+  });
+  await deleteStoredObjects({ r2KeySample: file.r2KeySample });
+}
 
 filesRouter.post(
   '/bulk-delete',
@@ -189,21 +216,15 @@ filesRouter.post(
     }
 
     const files = await prisma.file.findMany({
-      where: { id: { in: parsed.data.ids } },
-      select: { id: true, r2KeyFull: true, r2KeySample: true },
+      where: { id: { in: parsed.data.ids }, deletedAt: null },
+      select: removableFileSelect,
     });
     if (files.length === 0) {
       return res.status(404).json({ error: 'No matching files found' });
     }
-    const ids = files.map((f) => f.id);
 
-    const [, deleted] = await prisma.$transaction([
-      prisma.order.deleteMany({ where: { fileId: { in: ids } } }),
-      prisma.file.deleteMany({ where: { id: { in: ids } } }),
-    ]);
-
-    await Promise.all(files.map((f) => deleteStoredObjects(f)));
-    res.json({ deleted: deleted.count });
+    for (const file of files) await removeDataset(file);
+    res.json({ deleted: files.length });
   },
 );
 
@@ -220,8 +241,8 @@ filesRouter.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     });
   }
 
-  const existing = await prisma.file.findUnique({
-    where: { id: idResult.data },
+  const existing = await prisma.file.findFirst({
+    where: { id: idResult.data, deletedAt: null },
     select: { id: true },
   });
   if (!existing) return res.status(404).json({ error: 'File not found' });
@@ -238,18 +259,13 @@ filesRouter.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const idResult = uuidSchema.safeParse(req.params.id);
   if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
 
-  const file = await prisma.file.findUnique({
-    where: { id: idResult.data },
-    select: { id: true, r2KeyFull: true, r2KeySample: true },
+  const file = await prisma.file.findFirst({
+    where: { id: idResult.data, deletedAt: null },
+    select: removableFileSelect,
   });
   if (!file) return res.status(404).json({ error: 'File not found' });
 
-  await prisma.$transaction([
-    prisma.order.deleteMany({ where: { fileId: file.id } }),
-    prisma.file.delete({ where: { id: file.id } }),
-  ]);
-  await deleteStoredObjects(file);
-
+  await removeDataset(file);
   res.status(204).send();
 });
 
@@ -403,12 +419,22 @@ filesRouter.post('/:id/checkout', requireAuth, async (req, res) => {
   if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
 
   const file = await prisma.file.findUnique({ where: { id: idResult.data } });
-  if (!file || file.status !== 'ready') {
+  if (!file || file.status !== 'ready' || file.deletedAt) {
     return res.status(404).json({ error: 'File not available' });
   }
 
   const userId = (req as AuthedRequest).userId;
   if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
+  const alreadyOwned = await prisma.order.findFirst({
+    where: { userId, fileId: file.id, status: 'paid', deletedAt: null },
+    select: { id: true },
+  });
+  if (alreadyOwned) {
+    return res
+      .status(409)
+      .json({ error: 'You already own this dataset — find it under My Purchases' });
+  }
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return res.status(401).json({ error: 'Not authenticated' });
@@ -453,7 +479,7 @@ filesRouter.get('/:id/download-url', requireAuth, async (req, res) => {
   if (!fileId.success) return res.status(400).json({ error: 'Invalid file ID' });
 
   const order = await prisma.order.findFirst({
-    where: { userId, fileId: fileId.data },
+    where: { userId, fileId: fileId.data, deletedAt: null },
     orderBy: { createdAt: 'desc' },
   });
 
@@ -475,24 +501,4 @@ filesRouter.get('/:id/download-url', requireAuth, async (req, res) => {
 
   const url = await getSignedDownloadUrl(file.r2KeyFull, 600); // 10 min
   res.json({ url });
-});
-
-filesRouter.get('/orders/mine', requireAuth, async (req, res) => {
-  const userId = (req as AuthedRequest).userId;
-  if (!userId) return res.status(401).json({ error: 'Not authenticated' });
-
-  const orders = await prisma.order.findMany({
-    where: { userId, status: 'paid' },
-    include: { file: { select: { title: true } } },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  res.json(
-    orders.map((o) => ({
-      id: o.id,
-      fileId: o.fileId,
-      fileTitle: o.file.title,
-      paidAt: o.paidAt,
-    })),
-  );
 });

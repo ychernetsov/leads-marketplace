@@ -53,6 +53,7 @@ export type FileMinAggregateOutputType = {
   status: $Enums.FileStatus | null
   uploadedBy: string | null
   createdAt: Date | null
+  deletedAt: Date | null
 }
 
 export type FileMaxAggregateOutputType = {
@@ -70,6 +71,7 @@ export type FileMaxAggregateOutputType = {
   status: $Enums.FileStatus | null
   uploadedBy: string | null
   createdAt: Date | null
+  deletedAt: Date | null
 }
 
 export type FileCountAggregateOutputType = {
@@ -87,6 +89,7 @@ export type FileCountAggregateOutputType = {
   status: number
   uploadedBy: number
   createdAt: number
+  deletedAt: number
   _all: number
 }
 
@@ -118,6 +121,7 @@ export type FileMinAggregateInputType = {
   status?: true
   uploadedBy?: true
   createdAt?: true
+  deletedAt?: true
 }
 
 export type FileMaxAggregateInputType = {
@@ -135,6 +139,7 @@ export type FileMaxAggregateInputType = {
   status?: true
   uploadedBy?: true
   createdAt?: true
+  deletedAt?: true
 }
 
 export type FileCountAggregateInputType = {
@@ -152,6 +157,7 @@ export type FileCountAggregateInputType = {
   status?: true
   uploadedBy?: true
   createdAt?: true
+  deletedAt?: true
   _all?: true
 }
 
@@ -256,6 +262,7 @@ export type FileGroupByOutputType = {
   status: $Enums.FileStatus
   uploadedBy: string | null
   createdAt: Date
+  deletedAt: Date | null
   _count: FileCountAggregateOutputType | null
   _avg: FileAvgAggregateOutputType | null
   _sum: FileSumAggregateOutputType | null
@@ -296,6 +303,7 @@ export type FileWhereInput = {
   status?: Prisma.EnumFileStatusFilter<"File"> | $Enums.FileStatus
   uploadedBy?: Prisma.StringNullableFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
   uploader?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   orders?: Prisma.OrderListRelationFilter
 }
@@ -315,6 +323,7 @@ export type FileOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   uploadedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   uploader?: Prisma.UserOrderByWithRelationInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
 }
@@ -337,6 +346,7 @@ export type FileWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumFileStatusFilter<"File"> | $Enums.FileStatus
   uploadedBy?: Prisma.StringNullableFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
   uploader?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
   orders?: Prisma.OrderListRelationFilter
 }, "id">
@@ -356,6 +366,7 @@ export type FileOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   uploadedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.FileCountOrderByAggregateInput
   _avg?: Prisma.FileAvgOrderByAggregateInput
   _max?: Prisma.FileMaxOrderByAggregateInput
@@ -381,6 +392,7 @@ export type FileScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumFileStatusWithAggregatesFilter<"File"> | $Enums.FileStatus
   uploadedBy?: Prisma.StringNullableWithAggregatesFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"File"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
 }
 
 export type FileCreateInput = {
@@ -397,6 +409,7 @@ export type FileCreateInput = {
   sampleUrl?: string | null
   status?: $Enums.FileStatus
   createdAt?: Date | string
+  deletedAt?: Date | string | null
   uploader?: Prisma.UserCreateNestedOneWithoutUploadedFilesInput
   orders?: Prisma.OrderCreateNestedManyWithoutFileInput
 }
@@ -416,6 +429,7 @@ export type FileUncheckedCreateInput = {
   status?: $Enums.FileStatus
   uploadedBy?: string | null
   createdAt?: Date | string
+  deletedAt?: Date | string | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFileInput
 }
 
@@ -433,6 +447,7 @@ export type FileUpdateInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploader?: Prisma.UserUpdateOneWithoutUploadedFilesNestedInput
   orders?: Prisma.OrderUpdateManyWithoutFileNestedInput
 }
@@ -452,6 +467,7 @@ export type FileUncheckedUpdateInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   uploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutFileNestedInput
 }
 
@@ -470,6 +486,7 @@ export type FileCreateManyInput = {
   status?: $Enums.FileStatus
   uploadedBy?: string | null
   createdAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type FileUpdateManyMutationInput = {
@@ -486,6 +503,7 @@ export type FileUpdateManyMutationInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type FileUncheckedUpdateManyInput = {
@@ -503,6 +521,7 @@ export type FileUncheckedUpdateManyInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   uploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type FileListRelationFilter = {
@@ -530,6 +549,7 @@ export type FileCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   uploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type FileAvgOrderByAggregateInput = {
@@ -553,6 +573,7 @@ export type FileMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   uploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type FileMinOrderByAggregateInput = {
@@ -570,6 +591,7 @@ export type FileMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   uploadedBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type FileSumOrderByAggregateInput = {
@@ -657,6 +679,10 @@ export type EnumFileStatusFieldUpdateOperationsInput = {
   set?: $Enums.FileStatus
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type FileCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<Prisma.FileCreateWithoutOrdersInput, Prisma.FileUncheckedCreateWithoutOrdersInput>
   connectOrCreate?: Prisma.FileCreateOrConnectWithoutOrdersInput
@@ -685,6 +711,7 @@ export type FileCreateWithoutUploaderInput = {
   sampleUrl?: string | null
   status?: $Enums.FileStatus
   createdAt?: Date | string
+  deletedAt?: Date | string | null
   orders?: Prisma.OrderCreateNestedManyWithoutFileInput
 }
 
@@ -702,6 +729,7 @@ export type FileUncheckedCreateWithoutUploaderInput = {
   sampleUrl?: string | null
   status?: $Enums.FileStatus
   createdAt?: Date | string
+  deletedAt?: Date | string | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutFileInput
 }
 
@@ -748,6 +776,7 @@ export type FileScalarWhereInput = {
   status?: Prisma.EnumFileStatusFilter<"File"> | $Enums.FileStatus
   uploadedBy?: Prisma.StringNullableFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
 }
 
 export type FileCreateWithoutOrdersInput = {
@@ -764,6 +793,7 @@ export type FileCreateWithoutOrdersInput = {
   sampleUrl?: string | null
   status?: $Enums.FileStatus
   createdAt?: Date | string
+  deletedAt?: Date | string | null
   uploader?: Prisma.UserCreateNestedOneWithoutUploadedFilesInput
 }
 
@@ -782,6 +812,7 @@ export type FileUncheckedCreateWithoutOrdersInput = {
   status?: $Enums.FileStatus
   uploadedBy?: string | null
   createdAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type FileCreateOrConnectWithoutOrdersInput = {
@@ -814,6 +845,7 @@ export type FileUpdateWithoutOrdersInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   uploader?: Prisma.UserUpdateOneWithoutUploadedFilesNestedInput
 }
 
@@ -832,6 +864,7 @@ export type FileUncheckedUpdateWithoutOrdersInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   uploadedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type FileCreateManyUploaderInput = {
@@ -848,6 +881,7 @@ export type FileCreateManyUploaderInput = {
   sampleUrl?: string | null
   status?: $Enums.FileStatus
   createdAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type FileUpdateWithoutUploaderInput = {
@@ -864,6 +898,7 @@ export type FileUpdateWithoutUploaderInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUpdateManyWithoutFileNestedInput
 }
 
@@ -881,6 +916,7 @@ export type FileUncheckedUpdateWithoutUploaderInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutFileNestedInput
 }
 
@@ -898,6 +934,7 @@ export type FileUncheckedUpdateManyWithoutUploaderInput = {
   sampleUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -946,6 +983,7 @@ export type FileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   status?: boolean
   uploadedBy?: boolean
   createdAt?: boolean
+  deletedAt?: boolean
   uploader?: boolean | Prisma.File$uploaderArgs<ExtArgs>
   orders?: boolean | Prisma.File$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.FileCountOutputTypeDefaultArgs<ExtArgs>
@@ -966,6 +1004,7 @@ export type FileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   uploadedBy?: boolean
   createdAt?: boolean
+  deletedAt?: boolean
   uploader?: boolean | Prisma.File$uploaderArgs<ExtArgs>
 }, ExtArgs["result"]["file"]>
 
@@ -984,6 +1023,7 @@ export type FileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   status?: boolean
   uploadedBy?: boolean
   createdAt?: boolean
+  deletedAt?: boolean
   uploader?: boolean | Prisma.File$uploaderArgs<ExtArgs>
 }, ExtArgs["result"]["file"]>
 
@@ -1002,9 +1042,10 @@ export type FileSelectScalar = {
   status?: boolean
   uploadedBy?: boolean
   createdAt?: boolean
+  deletedAt?: boolean
 }
 
-export type FileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "priceCents" | "currency" | "numRows" | "sizeBytes" | "originalFilename" | "r2KeyFull" | "r2KeySample" | "sampleUrl" | "status" | "uploadedBy" | "createdAt", ExtArgs["result"]["file"]>
+export type FileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "priceCents" | "currency" | "numRows" | "sizeBytes" | "originalFilename" | "r2KeyFull" | "r2KeySample" | "sampleUrl" | "status" | "uploadedBy" | "createdAt" | "deletedAt", ExtArgs["result"]["file"]>
 export type FileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   uploader?: boolean | Prisma.File$uploaderArgs<ExtArgs>
   orders?: boolean | Prisma.File$ordersArgs<ExtArgs>
@@ -1038,6 +1079,11 @@ export type $FilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     status: $Enums.FileStatus
     uploadedBy: string | null
     createdAt: Date
+    /**
+     * Set when an admin removes the dataset from the catalog. The row (and the
+     * stored full file) is kept so existing buyers keep their access.
+     */
+    deletedAt: Date | null
   }, ExtArgs["result"]["file"]>
   composites: {}
 }
@@ -1477,6 +1523,7 @@ export interface FileFieldRefs {
   readonly status: Prisma.FieldRef<"File", 'FileStatus'>
   readonly uploadedBy: Prisma.FieldRef<"File", 'String'>
   readonly createdAt: Prisma.FieldRef<"File", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"File", 'DateTime'>
 }
     
 

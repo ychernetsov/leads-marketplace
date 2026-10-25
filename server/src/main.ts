@@ -5,6 +5,8 @@ import { authRouter } from './routes/auth.routes.js';
 import { filesRouter } from './routes/files.routes.js';
 import { webhooksRouter } from './routes/webhooks.routes.js';
 import { mocksRouter } from './routes/mocks.routes.js';
+import { ordersRouter } from './routes/orders.routes.js';
+import { labelsRouter } from './routes/labels.routes.js';
 import { isMocksMode } from './lib/mocks.js';
 
 const host = process.env.HOST ?? 'localhost';
@@ -55,6 +57,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/auth', authRouter);
 app.use('/files', filesRouter);
+app.use('/orders', ordersRouter);
+app.use('/labels', labelsRouter);
 
 app.get('/', (req, res) => {
     res.send({ 'message': 'Hello API'});

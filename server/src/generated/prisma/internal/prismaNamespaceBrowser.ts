@@ -53,7 +53,9 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   File: 'File',
-  Order: 'Order'
+  Order: 'Order',
+  Label: 'Label',
+  OrderLabel: 'OrderLabel'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -94,7 +96,8 @@ export const FileScalarFieldEnum = {
   sampleUrl: 'sampleUrl',
   status: 'status',
   uploadedBy: 'uploadedBy',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
@@ -110,10 +113,32 @@ export const OrderScalarFieldEnum = {
   stripePaymentIntentId: 'stripePaymentIntentId',
   status: 'status',
   createdAt: 'createdAt',
-  paidAt: 'paidAt'
+  paidAt: 'paidAt',
+  customTitle: 'customTitle',
+  customDescription: 'customDescription',
+  archivedAt: 'archivedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const LabelScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  createdAt: 'createdAt'
+} as const
+
+export type LabelScalarFieldEnum = (typeof LabelScalarFieldEnum)[keyof typeof LabelScalarFieldEnum]
+
+
+export const OrderLabelScalarFieldEnum = {
+  orderId: 'orderId',
+  labelId: 'labelId'
+} as const
+
+export type OrderLabelScalarFieldEnum = (typeof OrderLabelScalarFieldEnum)[keyof typeof OrderLabelScalarFieldEnum]
 
 
 export const SortOrder = {
