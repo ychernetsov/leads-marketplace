@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
 import type { AdminFile } from '../types/file';
@@ -16,22 +16,12 @@ export interface DatasetBulkEditInput {
   priceCents?: number;
 }
 
-/** Admin view of every dataset plus edit / bulk edit / delete mutations. */
-export function useAdminFiles(enabled = true) {
+/** Admin edit / bulk edit / delete of catalog datasets. */
+export function useDatasetMutations() {
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
 
-  const query = useQuery({
-    queryKey: queryKeys.adminFiles,
-    queryFn: () => api.get<AdminFile[]>('/files/admin/list'),
-    enabled,
-  });
-
-  function refresh() {
-    queryClient.invalidateQueries({ queryKey: queryKeys.adminFiles });
-    queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
-  }
-
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.catalogAll });
   const onError = (err: Error) => addToast('error', err.message || 'Something went wrong');
 
   const edit = useMutation({
@@ -69,5 +59,5 @@ export function useAdminFiles(enabled = true) {
     onError,
   });
 
-  return { ...query, edit, bulkEdit, remove };
+  return { edit, bulkEdit, remove, isPending: edit.isPending || bulkEdit.isPending || remove.isPending };
 }

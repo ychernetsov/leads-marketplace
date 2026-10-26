@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAdminFiles } from '../hooks/useAdminFiles';
-import { useSelection } from '../hooks/useSelection';
-import type { AdminFile } from '../types/file';
-import { AccessGate } from '../components/AccessGate';
-import { Header } from '../components/Header';
-import { ListEmpty, ListError, ListSkeleton } from '../components/ListState';
-import { DatasetBulkBar } from '../components/admin/DatasetBulkBar';
-import { DatasetBulkEditDialog } from '../components/admin/DatasetBulkEditDialog';
-import { DatasetDeleteDialog } from '../components/admin/DatasetDeleteDialog';
-import { DatasetEditDialog } from '../components/admin/DatasetEditDialog';
-import { DatasetRow } from '../components/admin/DatasetRow';
+import { useDatasetMutations } from '../../hooks/useDatasetMutations';
+import { useSelection } from '../../hooks/useSelection';
+import type { AdminFile } from '../../types/file';
+import { ListEmpty } from '../ListState';
+import { DatasetBulkBar } from './DatasetBulkBar';
+import { DatasetBulkEditDialog } from './DatasetBulkEditDialog';
+import { DatasetDeleteDialog } from './DatasetDeleteDialog';
+import { DatasetEditDialog } from './DatasetEditDialog';
+import { DatasetRow } from './DatasetRow';
 
 type Dialog =
   | { kind: 'edit'; file: AdminFile }
@@ -18,31 +16,20 @@ type Dialog =
   | { kind: 'delete'; files: AdminFile[] }
   | null;
 
-export function AdminDatasetsPage() {
-  return (
-    <AccessGate admin purpose="manage datasets">
-      <DatasetManager />
-    </AccessGate>
-  );
-}
-
-/** Admin list of every dataset with single + bulk edit/delete. */
-function DatasetManager() {
+/** The catalog in admin edit mode: selectable rows with single + bulk edit/delete. */
+export function DatasetEditor({ files }: { files: AdminFile[] }) {
   const navigate = useNavigate();
-  const files = useAdminFiles();
-  const selection = useSelection(files.data);
+  const mutations = useDatasetMutations();
+  const selection = useSelection(files);
   const [dialog, setDialog] = useState<Dialog>(null);
 
-  const busy = files.edit.isPending || files.bulkEdit.isPending || files.remove.isPending;
-  const closeDialog = () => !busy && setDialog(null);
+  const closeDialog = () => !mutations.isPending && setDialog(null);
   const done = { onSuccess: () => setDialog(null) };
 
   return (
-    <div className="pc-page">
-      <Header active="datasets" />
-
+    <>
       <DatasetBulkBar
-        total={files.data?.length ?? 0}
+        total={files.length}
         selectedCount={selection.selected.length}
         allSelected={selection.allSelected}
         onToggleAll={selection.toggleAll}
@@ -51,10 +38,7 @@ function DatasetManager() {
         onBulkDelete={() => setDialog({ kind: 'delete', files: selection.selected })}
       />
 
-      {files.isLoading && <ListSkeleton />}
-      {files.isError && <ListError what="datasets" onRetry={() => files.refetch()} />}
-
-      {files.data && files.data.length === 0 && (
+      {files.length === 0 && (
         <ListEmpty
           title="NO DATASETS YET"
           hint="UPLOAD A CSV AND IT WILL SHOW UP HERE"
@@ -66,7 +50,7 @@ function DatasetManager() {
         />
       )}
 
-      {files.data?.map((file) => (
+      {files.map((file) => (
         <DatasetRow
           key={file.id}
           file={file}
@@ -80,19 +64,19 @@ function DatasetManager() {
       {dialog?.kind === 'edit' && (
         <DatasetEditDialog
           file={dialog.file}
-          busy={files.edit.isPending}
+          busy={mutations.edit.isPending}
           onClose={closeDialog}
-          onSave={(values) => files.edit.mutate({ id: dialog.file.id, ...values }, done)}
+          onSave={(values) => mutations.edit.mutate({ id: dialog.file.id, ...values }, done)}
         />
       )}
 
       {dialog?.kind === 'bulk-edit' && (
         <DatasetBulkEditDialog
           files={dialog.files}
-          busy={files.bulkEdit.isPending}
+          busy={mutations.bulkEdit.isPending}
           onClose={closeDialog}
           onSave={(values) =>
-            files.bulkEdit.mutate({ ids: dialog.files.map((f) => f.id), ...values }, done)
+            mutations.bulkEdit.mutate({ ids: dialog.files.map((f) => f.id), ...values }, done)
           }
         />
       )}
@@ -100,10 +84,10 @@ function DatasetManager() {
       {dialog?.kind === 'delete' && (
         <DatasetDeleteDialog
           files={dialog.files}
-          busy={files.remove.isPending}
+          busy={mutations.remove.isPending}
           onClose={closeDialog}
           onConfirm={() =>
-            files.remove.mutate(
+            mutations.remove.mutate(
               dialog.files.map((f) => f.id),
               {
                 onSuccess: () => {
@@ -115,8 +99,6 @@ function DatasetManager() {
           }
         />
       )}
-    </div>
+    </>
   );
 }
-
-export default AdminDatasetsPage;

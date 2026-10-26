@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import type { DatasetBulkEditInput } from '../../hooks/useAdminFiles';
+import type { DatasetBulkEditInput } from '../../hooks/useDatasetMutations';
 import type { AdminFile } from '../../types/file';
 import { dollarsToCents } from '../../utilities/price';
 import { FormField } from '../FormField';

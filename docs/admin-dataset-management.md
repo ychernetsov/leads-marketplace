@@ -1,9 +1,11 @@
 # Admin dataset management (edit / delete, single + bulk)
 
-Admins (`admin@dev.local` / `devpassword1` in `dev:mocks`) can now manage
-every dataset from **DATASETS** in the header → `/admin/datasets`.
+Admins (`admin@dev.local` / `devpassword1` in `dev:mocks`) manage datasets
+directly in the catalog: the **VIEW / EDIT MODE** toggle in the catalog
+sub-header (`/?mode=edit`) switches the same page into management mode.
+There is no separate admin datasets route.
 
-## UI (`client/src/pages/AdminDatasetsPage.tsx`)
+## UI (`client/src/components/admin/DatasetEditor.tsx`, mounted by `CatalogPage`)
 
 - Lists **all** datasets regardless of status (`READY`, `FAILED`,
   `UPLOADING`, `PROCESSING` badges), with price, row count, purchase count,
@@ -23,11 +25,11 @@ every dataset from **DATASETS** in the header → `/admin/datasets`.
   delete), and its buyers keep it under **My Purchases** (flagged
   "REMOVED FROM CATALOG") with download still working.
 
-## API (`server/src/routes/files.routes.ts`, all `requireAuth` + `requireAdmin`)
+## API (`server/src/routes/files.routes.ts`; all but `GET /files` are `requireAuth` + `requireAdmin`)
 
 | Method | Path | Body | Result |
 |--------|------|------|--------|
-| `GET` | `/files/admin/list` | — | every file (any status) + `orderCount`, `sizeBytes` |
+| `GET` | `/files` | — | the catalog; for an admin caller it also includes unpublished files (any status) + `orderCount`, `sizeBytes` |
 | `PATCH` | `/files/:id` | `{ title?, description?, priceCents? }` (≥1 field) | updated file |
 | `DELETE` | `/files/:id` | — | `204`; hard-deletes an unpurchased file (+ stored objects), soft-deletes a purchased one |
 | `PATCH` | `/files/bulk` | `{ ids: uuid[], description?, priceCents? }` (≥1 field) | `{ updated: n }` |

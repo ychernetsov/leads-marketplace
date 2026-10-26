@@ -85,7 +85,7 @@ When you switch back to `npm run dev` (Postgres), run `npm run db:generate` so t
 
 | Email | Role |
 |-------|------|
-| `admin@dev.local` | admin — **UPLOAD** (`/admin/upload`) and **DATASETS** (`/admin/datasets`: edit/delete datasets, single or bulk — see `docs/admin-dataset-management.md`) |
+| `admin@dev.local` | admin — **UPLOAD** (`/admin/upload`) and **EDIT MODE** on the catalog (`/?mode=edit`: edit/delete datasets, single or bulk — see `docs/admin-dataset-management.md`) |
 | `buyer1@dev.local` | regular |
 | `buyer2@dev.local` | regular |
 

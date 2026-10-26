@@ -11,6 +11,7 @@ import {
 import z from 'zod';
 import { requireAuth, AuthedRequest } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { optionalAuth } from '../middleware/optionalAuth.js';
 import { randomUUID } from 'crypto';
 import { parse } from 'csv-parse';
 import { createCheckoutSession } from '../lib/checkout.js';
@@ -38,39 +39,17 @@ function formatCsvRow(row: string[]): string {
 
 export const filesRouter = Router();
 
-filesRouter.get('/', async (_req, res) => {
-  try {
-    const files = await prisma.file.findMany({
-      // Only expose files that finished processing successfully. Files
-      // that are still uploading/processing, or that failed processing,
-      // have no sample/price the buyer can act on and would otherwise show
-      // up as a dead end in the catalog (sample missing, "buy" failing
-      // with a 404 since checkout requires a 'ready' file).
-      where: { status: 'ready', deletedAt: null },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        priceCents: true,
-        currency: true,
-        numRows: true,
-        sampleUrl: true,
-        status: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(files);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch files' });
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Admin dataset management (list / edit / delete, single + bulk)
-// NOTE: these must be registered before the generic `/:id/...` routes so
-// that paths like `/admin/list` or `/bulk` aren't swallowed by `:id`.
-// ---------------------------------------------------------------------------
+const publicFileSelect = {
+  id: true,
+  title: true,
+  description: true,
+  priceCents: true,
+  currency: true,
+  numRows: true,
+  sampleUrl: true,
+  status: true,
+  createdAt: true,
+} as const;
 
 const editFieldsSchema = z.object({
   title: z
@@ -113,6 +92,7 @@ function toAdminFile(file: {
     priceCents: file.priceCents,
     currency: file.currency,
     numRows: file.numRows,
+    // BigInt isn't JSON-serialisable; sizes comfortably fit in a JS number.
     sizeBytes: file.sizeBytes === null ? null : Number(file.sizeBytes),
     originalFilename: file.originalFilename,
     sampleUrl: file.sampleUrl,
@@ -137,23 +117,57 @@ const adminFileSelect = {
   _count: { select: { orders: true } },
 } as const;
 
-filesRouter.get('/admin/list', requireAuth, requireAdmin, async (_req, res) => {
+/**
+ * The catalog. Everyone gets the datasets that are ready for sale; an admin
+ * additionally gets datasets in every other state (uploading / processing /
+ * failed) plus management fields (purchase count, size, ...), so the same
+ * endpoint backs both the storefront and the admin edit mode.
+ */
+filesRouter.get('/', optionalAuth, async (req, res) => {
   try {
+    const userId = (req as AuthedRequest).userId;
+    const user = userId
+      ? await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+      : null;
+
+    if (user?.role === 'admin') {
+      const files = await prisma.file.findMany({
+        where: { deletedAt: null },
+        select: adminFileSelect,
+        orderBy: { createdAt: 'desc' },
+      });
+      return res.json(files.map(toAdminFile));
+    }
+
     const files = await prisma.file.findMany({
-      where: { deletedAt: null },
-      select: adminFileSelect,
+      // Only expose files that finished processing successfully. Files
+      // that are still uploading/processing, or that failed processing,
+      // have no sample/price the buyer can act on and would otherwise show
+      // up as a dead end in the catalog (sample missing, "buy" failing
+      // with a 404 since checkout requires a 'ready' file).
+      where: { status: 'ready', deletedAt: null },
+      select: publicFileSelect,
       orderBy: { createdAt: 'desc' },
     });
-    res.json(files.map(toAdminFile));
+    res.json(files);
   } catch {
     res.status(500).json({ error: 'Failed to fetch files' });
   }
 });
 
+// ---------------------------------------------------------------------------
+// Admin dataset management (list / edit / delete, single + bulk)
+// NOTE: these must be registered before the generic `/:id/...` routes so
+// that paths like `/bulk` aren't swallowed by `:id`.
+// ---------------------------------------------------------------------------
+
+/** Bulk edit: apply the same description and/or price to many datasets. */
 filesRouter.patch('/bulk', requireAuth, requireAdmin, async (req, res) => {
   const parsed = z
     .object({
       ids: uuidListSchema,
+      // Title is intentionally not bulk-editable: giving many datasets the
+      // same title is never what an admin wants.
       description: editFieldsSchema.shape.description.optional(),
       priceCents: editFieldsSchema.shape.priceCents.optional(),
     })
@@ -179,6 +193,7 @@ filesRouter.patch('/bulk', requireAuth, requireAdmin, async (req, res) => {
   res.json({ updated: result.count });
 });
 
+
 const removableFileSelect = {
   id: true,
   r2KeyFull: true,
@@ -186,6 +201,14 @@ const removableFileSelect = {
   _count: { select: { orders: true } },
 } as const;
 
+/**
+ * Admin removal of a dataset.
+ *
+ * Purchases are never deleted. If anyone has bought the dataset it is only
+ * soft-deleted (hidden from the catalog and the admin list) and its full
+ * file is kept so buyers can still download it; only the public sample is
+ * dropped. Datasets with no purchases at all are removed for real.
+ */
 async function removeDataset(file: {
   id: string;
   r2KeyFull: string;
@@ -205,6 +228,10 @@ async function removeDataset(file: {
   await deleteStoredObjects({ r2KeySample: file.r2KeySample });
 }
 
+/**
+ * Bulk delete. Datasets nobody has bought are removed outright; datasets
+ * with purchases are only removed from the catalog — see `removeDataset`.
+ */
 filesRouter.post(
   '/bulk-delete',
   requireAuth,
@@ -228,6 +255,7 @@ filesRouter.post(
   },
 );
 
+/** Edit title / description / price of a single dataset. */
 filesRouter.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   const idResult = uuidSchema.safeParse(req.params.id);
   if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
@@ -255,6 +283,7 @@ filesRouter.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   res.json(toAdminFile(updated));
 });
 
+/** Delete a single dataset — see `removeDataset` for the purchase rules. */
 filesRouter.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const idResult = uuidSchema.safeParse(req.params.id);
   if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });

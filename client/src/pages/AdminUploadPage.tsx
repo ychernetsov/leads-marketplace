@@ -1,4 +1,5 @@
 import { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useUiStore } from '../store/uiStore';
@@ -22,6 +23,7 @@ export function AdminUploadPage() {
 
 /** The upload form itself; rendered only for admins. */
 function UploadForm() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const addToast = useUiStore((s) => s.addToast);
 
@@ -93,6 +95,10 @@ function UploadForm() {
       const processBody = await processRes.json().catch(() => ({}));
 
       if (!processRes.ok) {
+        // The upload itself succeeded, but the CSV failed processing
+        // (e.g. no data rows). Previously this was silently treated as a
+        // success, leaving a broken "failed" file for admins to wonder
+        // about — now it's surfaced immediately so it can be fixed/retried.
         throw new Error(
           processBody.error || 'File processing failed — check the CSV and try again',
         );
@@ -100,26 +106,32 @@ function UploadForm() {
 
       setStatus('ready');
       addToast('success', 'File uploaded and ready in catalog');
-      queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
-      queryClient.invalidateQueries({ queryKey: queryKeys.adminFiles });
 
       setTitle('');
       setDescription('');
       setPriceDollars('4.00');
       setFile(null);
       setProgress(0);
-    } catch (err: unknown) {
+    } catch (err) {
       setStatus('failed');
-      addToast(
-        'error',
-        err instanceof Error ? err.message : 'Upload failed',
-      );
+      addToast('error', err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      // Even a failed upload leaves a (failed) dataset row behind, which
+      // admins see in catalog edit mode — keep the cached catalog honest.
+      queryClient.invalidateQueries({ queryKey: queryKeys.catalogAll });
     }
   }
 
   return (
     <div className="pc-page">
       <Header active="upload" />
+
+      <div className="pc-subheader" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>UPLOAD A NEW DATASET</span>
+        <button type="button" className="pc-nav-link" onClick={() => navigate('/?mode=edit')}>
+          ← MANAGE DATASETS
+        </button>
+      </div>
 
       <div style={{ padding: 32, maxWidth: 480, margin: '0 auto' }}>
         <div

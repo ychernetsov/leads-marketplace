@@ -1,83 +1,49 @@
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { useDownload } from '../hooks/useDownload';
-import { useMyOrders } from '../hooks/useMyOrders';
-import { queryKeys } from '../hooks/queryKeys';
-import { api } from '../lib/api';
-import { useUiStore } from '../store/uiStore';
-import type { CatalogFile } from '../types/file';
+import { useCatalog } from '../hooks/useCatalog';
+import { useCatalogMode } from '../hooks/useCatalogMode';
+import { isAdminFile } from '../types/file';
 import { Header } from '../components/Header';
 import { ListError, ListSkeleton } from '../components/ListState';
-import { BuyButton } from '../components/catalog/BuyButton';
-import { CatalogRow } from '../components/catalog/CatalogRow';
-import { DownloadButton } from '../components/catalog/DownloadButton';
+import { CatalogBrowser } from '../components/catalog/CatalogBrowser';
+import { CatalogModeToggle } from '../components/catalog/CatalogModeToggle';
+import { DatasetEditor } from '../components/admin/DatasetEditor';
 
+/**
+ * The single catalog route for everyone. Admins can flip it into edit mode,
+ * which also reveals datasets that aren't published (uploading / failed).
+ */
 const CatalogPage = () => {
-  const { isLoggedIn, isAdmin } = useAuth();
-  const navigate = useNavigate();
-  const addToast = useUiStore((s) => s.addToast);
-  const { download, downloadingId } = useDownload();
+  const { isAdmin } = useAuth();
+  const [mode, setMode] = useCatalogMode();
+  const { data: files, isLoading, isError, refetch } = useCatalog();
 
-  const {
-    data: files,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: queryKeys.catalog,
-    queryFn: () => api.get<CatalogFile[]>('/files'),
-    retry: false,
-  });
-
-  // Buyers see DOWNLOAD instead of BUY for datasets they already own.
-  const myOrders = useMyOrders(isLoggedIn && !isAdmin);
-  const ownedFileIds = useMemo(
-    () => new Set((myOrders.data ?? []).map((o) => o.fileId)),
-    [myOrders.data],
-  );
-
-  async function handleBuy(fileId: string) {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-    try {
-      const { checkoutUrl } = await api.post<{ checkoutUrl: string }>(`/files/${fileId}/checkout`);
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      addToast('error', err instanceof Error ? err.message : 'Could not start checkout');
-    }
-  }
-
-  function actionsFor(file: CatalogFile) {
-    if (isAdmin) return null;
-    if (ownedFileIds.has(file.id)) {
-      return (
-        <DownloadButton
-          downloading={downloadingId === file.id}
-          onDownload={() => download(file.id, file.title)}
-        />
-      );
-    }
-    return <BuyButton priceCents={file.priceCents} onBuy={() => handleBuy(file.id)} />;
-  }
+  const editing = isAdmin && mode === 'edit';
+  const adminFiles = editing ? (files ?? []).filter(isAdminFile) : [];
+  // Outside edit mode admins see exactly what buyers see.
+  const publicFiles = (files ?? []).filter((f) => f.status === 'ready');
 
   return (
     <div className="pc-page">
       <Header active="catalog" />
 
-      <div className="pc-subheader">
-        {files ? `${files.length} DATASETS` : ''} · SAMPLE FREE · $4.00 TO UNLOCK THE FULL FILE
+      <div
+        className="pc-subheader"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}
+      >
+        <span>
+          {files
+            ? editing
+              ? `${adminFiles.length} DATASETS · ${publicFiles.length} PUBLISHED`
+              : `${publicFiles.length} DATASETS · SAMPLE FREE · $4.00 TO UNLOCK THE FULL FILE`
+            : ''}
+        </span>
+        {isAdmin && <CatalogModeToggle mode={mode} onChange={setMode} />}
       </div>
 
       {isLoading && <ListSkeleton rows={20} />}
       {isError && <ListError what="datasets" onRetry={() => refetch()} />}
 
-      {files?.map((file) => (
-        <CatalogRow key={file.id} file={file} actions={actionsFor(file)} />
-      ))}
+      {files && (editing ? <DatasetEditor files={adminFiles} /> : <CatalogBrowser files={publicFiles} />)}
 
       <div className="pc-footer">FILES HOSTED ON CLOUDFLARE R2 · PAYMENTS VIA STRIPE</div>
     </div>

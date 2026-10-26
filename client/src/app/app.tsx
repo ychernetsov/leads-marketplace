@@ -5,7 +5,6 @@ import { LoginSignupPage } from '../pages/LoginSignupPage';
 import { ToastContainer } from '../components/ToastContainer';
 import { OrdersPage } from '../pages/OrdersPage';
 import { AdminUploadPage } from '../pages/AdminUploadPage';
-import { AdminDatasetsPage } from '../pages/AdminDatasetsPage';
 import { CheckoutSuccessPage } from '../pages/CheckoutSuccessPage';
 import { CheckoutCancelPage } from '../pages/CheckoutCancelPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -25,7 +24,6 @@ export function App() {
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/checkout/cancel" element={<CheckoutCancelPage />} />
         <Route path="/admin/upload" element={<AdminUploadPage />} />
-        <Route path="/admin/datasets" element={<AdminDatasetsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <ToastContainer />

@@ -60,7 +60,7 @@ export function useMyOrders(enabled = true) {
       addToast('success', 'Removed from your purchases');
       refresh();
       // The catalog shows BUY again for items no longer owned.
-      queryClient.invalidateQueries({ queryKey: queryKeys.catalog });
+      queryClient.invalidateQueries({ queryKey: queryKeys.catalogAll });
     },
     onError,
   });
