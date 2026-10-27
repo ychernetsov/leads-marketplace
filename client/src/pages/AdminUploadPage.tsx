@@ -71,6 +71,10 @@ function UploadForm() {
       return;
     }
 
+    // Set once step 1 (create the dataset row) succeeds, so a failure in
+    // step 2 (PUT to storage) or 3 (process) can mark that row as failed.
+    let createdFileId: string | null = null;
+
     try {
       setStatus('uploading');
       setProgress(0);
@@ -84,6 +88,7 @@ function UploadForm() {
         priceCents,
         originalFilename: file.name,
       });
+      createdFileId = fileId;
 
       await uploadToR2(uploadUrl, file);
 
@@ -104,6 +109,7 @@ function UploadForm() {
         );
       }
 
+      createdFileId = null; // fully processed — nothing to abort
       setStatus('ready');
       addToast('success', 'File uploaded and ready in catalog');
 
@@ -115,6 +121,11 @@ function UploadForm() {
     } catch (err) {
       setStatus('failed');
       addToast('error', err instanceof Error ? err.message : 'Upload failed');
+      if (createdFileId) {
+        // Don't leave a zombie "uploading" row behind: mark it failed so it
+        // shows up as FAILED in catalog edit mode (never as purchasable).
+        await api.post(`/files/${createdFileId}/abort`).catch(() => undefined);
+      }
     } finally {
       // Even a failed upload leaves a (failed) dataset row behind, which
       // admins see in catalog edit mode — keep the cached catalog honest.

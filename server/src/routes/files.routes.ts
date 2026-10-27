@@ -339,6 +339,25 @@ filesRouter.post('/upload', requireAuth, requireAdmin, async (req, res) => {
   res.status(201).json({ fileId: file.id, uploadUrl });
 });
 
+/**
+ * Called by the upload UI when step 2 (PUT to storage) or step 3 (process)
+ * fails, so the dataset row created in step 1 doesn't linger as a zombie
+ * "uploading" entry. Only affects rows that are still mid-upload.
+ */
+filesRouter.post('/:id/abort', requireAuth, requireAdmin, async (req, res) => {
+  const idResult = uuidSchema.safeParse(req.params.id);
+  if (!idResult.success) return res.status(400).json({ error: 'Invalid file ID' });
+
+  const result = await prisma.file.updateMany({
+    where: { id: idResult.data, status: { in: ['uploading', 'processing'] } },
+    data: { status: 'failed' },
+  });
+  if (result.count === 0) {
+    return res.status(409).json({ error: 'File is not mid-upload' });
+  }
+  res.json({ id: idResult.data, status: 'failed' });
+});
+
 filesRouter.post(
   '/:id/process',
   requireAuth,
